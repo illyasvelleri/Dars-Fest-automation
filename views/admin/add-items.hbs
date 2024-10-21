@@ -1,0 +1,74 @@
+<div class="container">
+  <h2>Manage Items</h2>
+  <button id="addItemBtn" class="btn btn-primary">Add Item</button>
+
+  <div id="itemContainer" class="row mt-4">
+    <!-- Dynamically added items will appear here -->
+  </div>
+</div>
+
+<script>
+  document.getElementById('addItemBtn').addEventListener('click', function () {
+    const itemContainer = document.getElementById('itemContainer');
+
+    // Create a new item card
+    const itemCard = document.createElement('div');
+    itemCard.className = 'col-sm-4 mb-3';
+
+    itemCard.innerHTML = `
+      <div class="card">
+        <div class="card-body">
+          <input type="text" class="form-control mb-2" placeholder="Enter Item Name" id="itemName">
+          
+          <!-- Category Selection -->
+          <select class="form-control mb-2" id="itemCategory">
+            <option value="">Select Category</option>
+            <option value="sub junior">Sub Junior</option>
+            <option value="junior">Junior</option>
+            <option value="senior">Senior</option>
+            <option value="senior">General</option>
+          </select>
+
+          <!-- Gold, Silver, Bronze Selection -->
+          <select class="form-control mb-2" id="itemType">
+            <option value="">Select Type</option>
+            <option value="gold">Gold</option>
+            <option value="silver">Silver</option>
+            <option value="bronze">Bronze</option>
+          </select>
+
+          <button class="btn btn-success" onclick="saveItem(this)">Save</button>
+        </div>
+      </div>
+    `;
+
+    itemContainer.appendChild(itemCard);
+  });
+
+  // Function to save the item when the Save button is clicked
+  function saveItem(button) {
+    const itemName = button.previousElementSibling.previousElementSibling.previousElementSibling.value; // Get the item name
+    const itemCategory = button.previousElementSibling.previousElementSibling.value; // Get the selected category
+    const itemType = button.previousElementSibling.value; // Get the selected prize
+
+    if (itemName && itemCategory && itemType) {
+      // Send data to server using Fetch
+      fetch('/admin/items/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: itemName, category: itemCategory, type: itemType }) // Include category and prize in the request body
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Item added successfully!');
+            location.reload(); // Reload the page to show the updated items
+          } else {
+            alert('Error adding item');
+          }
+        });
+    } else {
+      alert('Please enter an item name, select a category, and a prize');
+    }
+  }
+</script>

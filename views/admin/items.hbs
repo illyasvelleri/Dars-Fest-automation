@@ -1,0 +1,147 @@
+<div class="container">
+  <h2>Items</h2>
+  <div class="row">
+    {{#each items}}
+    <div class="col-sm-4 mb-3">
+      {{#if (eq this.type 'gold')}}
+      <div class="card" style="background-color: gold;">
+        {{else if (eq this.type 'silver')}}
+        <div class="card" style="background-color: silver;">
+          {{else if (eq this.type 'bronze')}}
+          <div class="card" style="background-color: #cd7f32;"> <!-- Bronze color -->
+            {{else}}
+            <div class="card">
+              {{/if}}
+
+              <div class="card-body">
+                <h5 class="card-title">{{this.name}}</h5>
+                <p>Category: {{this.category}}</p> <!-- Display item category -->
+                <p>Participants: {{this.participants.length}}</p>
+                <span style="display: flex; justify-content: space-between">
+                  <a href="/admin/items/{{this._id}}" class="btn btn-primary">Manage Contestants</a>
+                  <button class="btn btn-success" onclick="openJuryModal('{{this._id}}')">
+                    Share <i class="fa fa-share"></i>
+                  </button>
+                </span>
+              </div>
+            </div> <!-- End card -->
+          </div> <!-- End col -->
+          {{/each}}
+          {{#if (eq items.length 0)}}
+          <p>No items found</p>
+          {{/if}}
+        </div>
+      </div>
+
+
+      <!-- Modal for Jury selection -->
+      <div class="modal fade" id="juryModal" tabindex="-1" aria-labelledby="juryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="juryModalLabel">Select a Jury to Assign</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="juryList" class="row">
+                {{#each juries}}
+                <div class="col-sm-4 mb-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">{{this.username}}</h5>
+                      <button class="btn btn-success" onclick="assignJury('{{this._id}}')">Assign</button>
+                    </div>
+                  </div>
+                </div>
+                {{else}}
+                <p>No juries found.</p>
+                {{/each}}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <style>
+        * {
+          font-family: 'General Sans', sans-serif;
+        }
+      </style>
+
+
+      <script>
+        // JavaScript code for modal and jury assignment
+        let selectedItemId = null;
+
+        // Open the jury modal
+        function openJuryModal(itemId) {
+          selectedItemId = itemId;
+
+          // Show the modal
+          const juryModal = new bootstrap.Modal(document.getElementById('juryModal'));
+          juryModal.show();
+        }
+
+        // Assign a jury to the selected item
+        function assignJury(juryId) {
+          fetch('/admin/assign-jury-to-item', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              itemId: selectedItemId,
+              juryId: juryId,
+            }),
+          })
+            .then(response => response.json())
+            .then(result => {
+              if (result.success) {
+                alert('Item assigned to jury successfully!');
+                // Fetch and display item details
+                fetchItemDetails(selectedItemId);
+              } else {
+                alert('Failed to assign item to jury.');
+              }
+            })
+            .catch(error => {
+              console.error('Error assigning jury:', error);
+              alert('An error occurred while assigning the jury.');
+            });
+        }
+
+        // Fetch and display item details including participants
+        function fetchItemDetails(itemId) {
+          fetch(`/admin/get-item-details/${itemId}`)
+            .then(response => response.json())
+            .then(item => {
+              // Clear previous participants
+              const participantsList = document.getElementById('participantsList');
+              participantsList.innerHTML = '';
+
+              if (item.participants.length) {
+                item.participants.forEach(participant => {
+                  const li = document.createElement('li');
+                  li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                  li.innerHTML = `${participant.name}<span class="badge bg-secondary">${participant.contestantNumber}</span>`;
+                  participantsList.appendChild(li);
+                });
+              } else {
+                participantsList.innerHTML = '<li class="list-group-item">No participants yet.</li>';
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching item details:', error);
+            });
+        }
+
+        // Attach event listener for DOMContentLoaded to initialize any scripts if needed
+        document.addEventListener('DOMContentLoaded', () => {
+          // Initialize any other scripts here if needed
+        });
+
+      </script>

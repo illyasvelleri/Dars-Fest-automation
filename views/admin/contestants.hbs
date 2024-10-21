@@ -1,0 +1,44 @@
+<h1>Contestant Registration</h1>
+
+<form action="/admin/contestants/upload" method="POST">
+  <label for="name">Contestant Name:</label>
+  <input type="text" name="name" required>
+
+  <label for="groupName">Group Name:</label>
+  <select name="groupName" required>
+    <option value="Team A">Team A</option>
+    <option value="Team B">Team B</option>
+    <option value="Team C">Team C</option>
+    <option value="Team D">Team D</option>
+  </select>
+
+  <label for="tockenNumber">Token Number</label>
+  <input type="number" name="tokenNumber" required>
+  <button type="submit">Add Contestant</button>
+</form>
+
+<h2>Registered Contestants</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Contestant Number</th>
+      <th>Name</th>
+      <th>Group</th>
+      <th>Token Number</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each contestants}}
+    <tr>
+      <td>{{this.contestantNumber}}</td>
+      <td>{{this.name}}</td>
+      <td>{{this.groupName}}</td>
+      <td>{{this.tokenNumber}}</td>
+    </tr>
+    {{else}}
+    <tr>
+      <td colspan="4">No contestants found.</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

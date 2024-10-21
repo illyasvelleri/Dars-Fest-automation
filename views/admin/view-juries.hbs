@@ -1,0 +1,20 @@
+<div class="container my-5">
+    <h2>All Juries</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each juries}}
+            <tr>
+                <td>{{this.username}}</td>
+                <td>{{this.createdAt}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+
