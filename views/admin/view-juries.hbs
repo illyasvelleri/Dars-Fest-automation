@@ -12,9 +12,14 @@
             <tr>
                 <td>{{this.username}}</td>
                 <td>{{this.createdAt}}</td>
+                <td>
+                    <!-- Delete Button -->
+                    <form action="/admin/delete-jury/{{this._id}}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
             {{/each}}
         </tbody>
     </table>
 </div>
-

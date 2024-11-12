@@ -1,19 +1,62 @@
 const Contestant = require('../models/Contestant');
 const Item = require('../models/item');
 const Jury = require('../models/Jury');
-const Result = require('../models/GroupedScores');
+const GroupedScores = require('../models/GroupedScores');
+const Results = require('../models/Results');
+const PublicResults = require('../models/PublicResult');
+const Points = require('../models/Points');
 const mongoose = require('mongoose');
 
 
+// exports.adminDashboard = async (req, res) => {
+//     try {
+//         const juries = await Jury.find(); 
+        
+//         res.render('admin/dashboard', { juries });
+//     } catch (error) {
+//         console.error('Error fetching juries:', error);
+//         res.status(500).send('Error fetching juries');
+//     }
+// }
+
 exports.adminDashboard = async (req, res) => {
     try {
+        // Fetch all juries from the database
         const juries = await Jury.find();  // Fetch all juries
-        res.render('admin/dashboard', { juries });
+
+        // Fetch the results from the database
+        const results = await Results.findOne({}, 'topPerformers groupPoints topPerformersByGroup').lean();
+
+        // Check if results were found
+        if (!results) {
+            console.log("No results found.");
+            return res.render('admin/dashboard', { 
+                juries,
+                topPerformers: {}, 
+                groupPoints: {}, 
+                topPerformersByGroup: [] 
+            });
+        }
+
+        // If results exist, pass them directly to the view without using map()
+        const { topPerformers, groupPoints, topPerformersByGroup } = results;
+
+        // Render the admin dashboard with juries and results data
+        res.render('admin/dashboard', { 
+            juries,
+            topPerformers: topPerformers || {},
+            groupPoints: groupPoints || {},
+            topPerformersByGroup: topPerformersByGroup || [] 
+        });
+
     } catch (error) {
-        console.error('Error fetching juries:', error);
-        res.status(500).send('Error fetching juries');
+        console.error('Error fetching juries or results:', error);
+        res.status(500).send('Error fetching data');
     }
-}
+};
+
+
+
 exports.renderAddItemsPage = (req, res) => {
     res.render('admin/add-items');
 };
@@ -24,26 +67,17 @@ exports.renderContestants = (req, res) => {
 
 
 
-// Function to generate token number (starting with ADF)
-const generateContestantNumber = () => {
-    return 'ADF' + Math.floor(1000 + Math.random() * 9000);
-};
-
-
 // Upload contestant details
 
 exports.uploadContestant = async (req, res) => {
     try {
-        const { name, groupName, tokenNumber } = req.body;
-        const contestantNumber = generateContestantNumber();
-        console.log('Generated Contestant Number:', contestantNumber);
+        const { contestantNumber, name, groupName } = req.body;
 
         // Creating new contestant with the provided details and the generated contestant number
         const newContestant = new Contestant({
+            contestantNumber,
             name,
             groupName,
-            tokenNumber,
-            contestantNumber, // Saving generated contestant number
         });
 
         await newContestant.save();
@@ -70,16 +104,67 @@ exports.getContestants = async (req, res) => {
     }
 };
 
+exports.deleteContestant = async (req, res) => {
+    const contestantId = req.params.id;
+    try {
+        // console.log('called');
+        // const contestantId = req.params.id;
+
+        // Delete the contestant by ID
+        await Contestant.findByIdAndDelete(contestantId);
+
+        console.log(`Contestant with ID ${contestantId} deleted successfully`);
+        res.redirect('/admin/contestants');
+    } catch (error) {
+        console.error('Error deleting contestant:', error.message);
+        res.status(500).send(`Error deleting contestant: ${error.message}`);
+    }
+}
+
+
+// Save the new item to the database
+// exports.createItem = async (req, res) => {
+//     try {
+//         const { name, category, type, stage} = req.body;
+//         const newItem = new Item({ name, category, type, stage });
+//         await newItem.save();
+//         res.json({ success: true });
+//     } catch (error) {
+//         console.log('Error Adding Item:', error);
+//         res.json({ success: false });
+//     }
+// };
+
+
 // Save the new item to the database
 exports.createItem = async (req, res) => {
     try {
-        const { name, category, type } = req.body;
-        const newItem = new Item({ name, category, type });
+        const { name, category, type, stage } = req.body;
+
+        // Check if an item with the same name and category (case-insensitive) already exists
+        const existingItem = await Item.findOne({
+            name: name.toLowerCase(),
+            category: category.toLowerCase()
+        });
+
+        if (existingItem) {
+            // Item with the same name and category already exists
+            return res.json({ success: false, message: 'Item with this name already exists in the selected category.' });
+        }
+
+        // Create and save the new item
+        const newItem = new Item({
+            name: name.toLowerCase(),
+            category: category.toLowerCase(),
+            type,
+            stage
+        });
+
         await newItem.save();
-        res.json({ success: true });
+        res.json({ success: true, message: 'Item added successfully!' });
     } catch (error) {
-        console.log('Error Adding Item:', error);
-        res.json({ success: false });
+        console.error('Error Adding Item:', error);
+        res.json({ success: false, message: 'An error occurred while adding the item.' });
     }
 };
 
@@ -102,6 +187,42 @@ exports.getItems = async (req, res) => {
         res.status(500).send('Error fetching items');
     }
 };
+
+
+// Fetch and display filtered items along with juries
+exports.getFilteredItems = async (req, res) => {
+    try {
+        // Extract filter criteria from query parameters
+        const { category, type, stage } = req.query;
+
+        // Create a filter object
+        let filter = {};
+
+        // Add filter conditions based on query parameters if provided
+        if (category) filter.category = category;
+        if (type) filter.type = type;
+        if (stage) filter.stage = stage;
+
+        // Fetch items from the database based on the filter
+        const itemsFromDb = await Item.find(filter);
+        const items = itemsFromDb.map(item => item.toObject());
+
+        // Log the items to check their structure
+        console.log('Filtered Items:', items);
+
+        // Fetch juries from the database
+        const juriesFromDb = await Jury.find();
+        const juries = juriesFromDb.map(jury => jury.toObject());
+
+        // Render items with filtered results and juries
+        res.render('admin/items', { items, juries });
+    } catch (error) {
+        console.error('Error fetching items:', error);
+        res.status(500).json({ success: false, message: 'Error fetching items' });
+    }
+};
+
+
 
 // Fetch item details by ID
 exports.getItemDetails = async (req, res) => {
@@ -163,100 +284,52 @@ exports.assignJuryToItem = async (req, res) => {
     }
 };
 
-// View item page with populated participants and scores for each item
-// View item page with populated participants and scores for each item
-// exports.viewItemPage = async (req, res) => {
-//     const itemId = req.params.id;
-
-//     try {
-//         // Find the item by ID and populate participants
-//         const item = await Item.findById(itemId).populate({
-//             path: 'participants',
-//             select: 'name contestantNumber scores badge'
-//         }).lean(); // Use lean() to get a plain JavaScript object
-
-//         if (!item) {
-//             return res.status(404).send('Item not found');
-//         }
-
-//         // Restructure participants to directly include scores for the current item
-//         const participantsWithScores = item.participants.map(participant => {
-//             const scoreEntry = participant.scores.find(score => score.itemId.toString() === itemId.toString());
-//             return {
-//                 ...participant,
-//                 score: scoreEntry ? scoreEntry.score : null // Add the score if found, else set to null
-//             };
-//         });
-
-//         // Pass participantsWithScores along with the item
-//         res.render('admin/manageItem', { item, participants: participantsWithScores });
-
-//     } catch (error) {
-//         console.error('Error fetching item details:', error);
-//         res.status(500).send('Error fetching item details');
-//     }
-// };
-
-
 
 // View item page with populated participants
 exports.viewItemPage = async (req, res) => {
     const itemId = req.params.id;
 
     try {
-        // Find the item by ID and populate participants
-        const item = await Item.findById(itemId).populate('participants');
+        // Find the item by ID and populate participants with their necessary details
+        const item = await Item.findById(itemId)
+            .populate({
+                path: 'participants',
+                select: 'name contestantNumber',  // Select necessary fields 
+            }).lean(); // Convert to plain JavaScript object for easy manipulation
+
         if (!item) {
-            return res.status(404).send('Item not found');
+            return res.status(404).json({ success: false, message: 'Item not found' });
         }
 
-        // Convert Mongoose document to plain JavaScript object
-        const itemObj = item.toObject();
+        // Fetch grouped scores for this item from GroupedScores collection
+        const groupedScore = await GroupedScores.findOne({ itemId }).lean();
 
-        // Fetch scores for each participant
-        const participantScores = await Promise.all(itemObj.participants.map(async (participant) => {
-            const contestant = await Contestant.findById(participant._id).select('scores');
+        // If scores exist, map them to the participants
+        const participantScores = item.participants.map(participant => {
+            const scoreEntry = groupedScore
+                ? groupedScore.scores.find(s => s.contestantId.toString() === participant._id.toString())
+                : null;
+
             return {
-                id: contestant._id,
-                name: contestant.name,
-                scores: contestant.scores.filter(score => score.itemId.toString() === itemId.toString()),
+                id: participant._id,
+                name: participant.name,
+                contestantNumber: participant.contestantNumber,
+                score: scoreEntry ? scoreEntry.score : null, // If score exists, add it
+                badge: scoreEntry ? scoreEntry.badge : null  // If badge exists, add it
             };
-        }));
+        });
 
-        console.log('Item ID:', itemObj._id);
-        console.log('Participants:', itemObj.participants); // Log participants to see what data is being fetched
+        // Debugging output to check data
+        console.log('Participant Scores:', participantScores);
 
-        // Render the view with the plain JavaScript object
-        res.render('admin/manageItem', { item: itemObj, itemId: itemObj._id.toString(), participantScores });
-
+        // Render the view and pass participant data along with scores and badges
+        res.render('admin/manageItem', { item, itemId: item._id.toString(), participantScores });
     } catch (error) {
-        console.log('Error fetching item:', error);
-        res.status(500).send('Error fetching item details');
+        console.error('Error fetching item and participants:', error);
+        res.status(500).json({ success: false, message: 'Error fetching item details' });
     }
 };
 
-
-
-// exports.viewItemPage = async (req, res) => {
-//     const itemId = req.params.id;
-
-//     try {
-//         // Find the item by ID and populate participants
-//         const item = await Item.findById(itemId).populate('participants');
-//         if (!item) {
-//             return res.status(404).send('Item not found');
-//         }
-//         console.log('Item ID: ',item._id); 
-//         console.log('Participants:', item.participants); // Log participants to see what data is being fetched
-
-//         res.render('admin/manageItem', { item, itemId: item._id.toString() });
-
-//     } catch (error) {
-//         console.log('Error fetching item:', error);
-//         res.status(500).send('Error fetching item details');
-//     }
-
-// };
 
 // Search contestants by name, groupName, tokenNumber, or contestantNumber
 exports.searchContestants = async (req, res) => {
@@ -309,7 +382,6 @@ exports.searchContestants = async (req, res) => {
 
 exports.addContestantToItem = async (req, res) => {
     const { itemId, contestantId } = req.body;
-    
     try {
 
         // Check if both itemId and contestantId are valid ObjectId strings
@@ -317,7 +389,7 @@ exports.addContestantToItem = async (req, res) => {
             return res.status(400).send('Invalid item or contestant ID');
         }
 
-        
+
         const item = await Item.findById(itemId);
         const contestant = await Contestant.findById(contestantId);
 
@@ -341,7 +413,31 @@ exports.addContestantToItem = async (req, res) => {
     }
 };
 
+exports.deleteContestantFromItem = async (req, res) => {
+    const { itemId, contestantId } = req.params;
 
+    try {
+        const item = await Item.findById(itemId);
+        if (!item) {
+            return res.status(404).json({ success: false, message: 'Item not found' });
+        }
+
+        // Check if contestant exists in the participants array
+        const index = item.participants.indexOf(contestantId);
+        if (index === -1) {
+            return res.status(404).json({ success: false, message: 'Contestant not found in this item' });
+        }
+
+        // Remove the contestant from participants array
+        item.participants.splice(index, 1);
+        await item.save();
+
+        res.json({ success: true, message: 'Contestant removed successfully' });
+    } catch (error) {
+        console.error('Error deleting contestant from item:', error);
+        res.status(500).json({ success: false, message: 'Error deleting contestant from item' });
+    }
+};
 
 exports.renderJuryCreation = (req, res) => {
     res.render('admin/create-jury');
@@ -389,127 +485,71 @@ exports.viewAllJuries = async (req, res) => {
     }
 };
 
-// exports.saveScores = async (req, res) => {
-//     try {
-//         const { scores } = req.body;
 
-//         if (!scores || !Array.isArray(scores)) {
-//             return res.status(400).json({ success: false, message: 'Invalid data format' });
-//         }
-
-//         for (const entry of scores) {
-//             const { contestantId, itemId, score } = entry;
-
-//             // Ensure all required fields are present
-//             if (!contestantId || !itemId || score === undefined || score === null) {
-//                 console.warn('Missing fields in entry:', entry); // Log missing fields
-//                 continue; // Skip invalid entries
-//             }
-
-//             // Parse the score from string to integer
-//             const parsedScore = parseInt(score, 10);
-//             if (isNaN(parsedScore)) {
-//                 console.warn('Score parsing failed:', score); // Log parsing failures
-//                 continue; // Skip if score parsing fails
-//             }
-
-//             // Proceed with finding the contestant
-//             const contestant = await Contestant.findById(contestantId);
-//             if (!contestant) {
-//                 console.error(`Contestant not found: ${contestantId}`);
-//                 continue; // Skip if contestant not found
-//             }
-
-//             // Check if any other contestant has the same score for the same item
-//             const hasSameScoreInOtherContestants = await Contestant.findOne({
-//                 scores: { $elemMatch: { itemId: itemId, score: parsedScore } },
-//                 _id: { $ne: contestantId } // Exclude the current contestant
-//             });
-
-//             if (hasSameScoreInOtherContestants) {
-//                 return res.status(400).json({ success: false, message: `Score of ${parsedScore} for item ${itemId} is already taken by another contestant.` });
-//             }
-
-//            // Check for existing score entry for the item
-//            const existingScore = contestant.scores.find(s => s.itemId.toString() === itemId.toString());
-
-//            // Update the score using findByIdAndUpdate to avoid version errors
-//            const update = existingScore
-//                ? { "scores.$.score": parsedScore } // Update existing score
-//                : { $push: { scores: { itemId, score: parsedScore } } }; // Add new score
-
-//            try {
-//                await Contestant.findOneAndUpdate(
-//                    { _id: contestantId, "scores.itemId": existingScore ? itemId : { $exists: false } }, 
-//                    update, 
-//                    { new: true }
-//                );
-//                console.log(`Scores updated for contestant: ${contestantId}`);
-//            } catch (saveError) {
-//                console.error('Error updating contestant:', saveError);
-//                return res.status(500).json({ success: false, message: 'Failed to update scores', error: saveError.message });
-//            }
-//        }
-
-
-//         // After updating the scores, handle the badge assignment
-//         const itemIds = [...new Set(scores.map(score => score.itemId))]; // Get unique item IDs
-
-//         for (const itemId of itemIds) {
-//             // Fetch all contestants for this item who have a score greater than 0
-//             const contestantsForItem = await Contestant.find({
-//                 "scores": { $elemMatch: { itemId, score: { $gt: 0 } } }
-//             });
-
-//             // Sort the contestants by score in descending order
-//             contestantsForItem.sort((a, b) => {
-//                 const scoreA = a.scores.find(s => s.itemId.toString() === itemId.toString()).score;
-//                 const scoreB = b.scores.find(s => s.itemId.toString() === itemId.toString()).score;
-//                 return scoreB - scoreA;
-//             });
-
-//             // Assign badges to top three contestants
-//             for (let i = 0; i < contestantsForItem.length; i++) {
-//                 const badge = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : null;
-
-//                 if (badge) {
-//                     await Contestant.findByIdAndUpdate(contestantsForItem[i]._id, { badge });
-//                     console.log(`Assigned '${badge}' badge to: ${contestantsForItem[i].name}`);
-//                 } else {
-//                     // Clear badge for any contestant beyond the top 3
-//                     await Contestant.findByIdAndUpdate(contestantsForItem[i]._id, { badge: null });
-//                     console.log(`Reset badge for: ${contestantsForItem[i].name}`);
-//                 }
-//             }
-//         }
-
-
-//         res.status(200).json({ success: true, message: 'Scores updated successfully badges assigned' });
-//     } catch (error) {
-//         console.error('Error updating scores:', error);
-//         res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
-//     }
-// };
-// Route to handle saving custom points
-exports.saveCustomPoints = async (req, res) => {
+exports.deleteJury = async (req, res) => {
     try {
-        const customPointsData = req.body.customPointsData;
+        const juryId = req.params.id;
 
-        for (const entry of customPointsData) {
-            const itemId = mongoose.Types.ObjectId(entry.itemId); // Cast to ObjectId
-            const points = entry.points;
+        // Delete the jury from the database by ID
+        await Jury.findByIdAndDelete(juryId);
 
-            // Save to the results collection
-            await Result.findOneAndUpdate(
-                { itemId: itemId },
-                { points: points },
-                { upsert: true, new: true }
-            );
-        }
+        // After deletion, fetch the updated list of juries
+        const juries = await Jury.find();
+        const juriesPlain = juries.map(jury => jury.toObject());
 
-        res.status(200).json({ message: 'Custom points saved successfully' });
+        // Render the view with updated list of juries
+        res.render('admin/view-juries', { juries: juriesPlain });
     } catch (error) {
-        console.error('Error saving custom points:', error);
-        res.status(500).json({ error: 'Error saving custom points' });
+        console.error('Error deleting jury:', error);
+        res.status(500).send('Error deleting jury');
     }
 };
+
+
+exports.deleteItem = async (req, res) => {
+    const itemId = req.params.id;
+
+    try {
+        // Delete the item
+        const item = await Item.findByIdAndDelete(itemId);
+        if (!item) {
+            return res.status(404).json({ success: false, message: 'Item not found' });
+        }
+
+        // Delete the item from other collections by item ID directly
+        await Promise.all([
+            PublicResults.deleteOne({ itemId }),
+            Points.deleteOne({ itemId }),
+            GroupedScores.deleteOne({ itemId })
+        ]);
+
+        res.json({ success: true, message: 'Item and related data deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting item and related data:', error);
+        res.status(500).json({ success: false, message: 'Error deleting item and related data' });
+    }
+};
+
+// // Route to handle saving custom points
+// exports.saveCustomPoints = async (req, res) => {
+//     try {
+//         const customPointsData = req.body.customPointsData;
+
+//         for (const entry of customPointsData) {
+//             const itemId = mongoose.Types.ObjectId(entry.itemId); // Cast to ObjectId
+//             const points = entry.points;
+
+//             // Save to the results collection
+//             await Result.findOneAndUpdate(
+//                 { itemId: itemId },
+//                 { points: points },
+//                 { upsert: true, new: true }
+//             );
+//         }
+
+//         res.status(200).json({ message: 'Custom points saved successfully' });
+//     } catch (error) {
+//         console.error('Error saving custom points:', error);
+//         res.status(500).json({ error: 'Error saving custom points' });
+//     }
+// };

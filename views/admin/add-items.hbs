@@ -1,74 +1,205 @@
-<div class="container">
-  <h2>Manage Items</h2>
-  <button id="addItemBtn" class="btn btn-primary">Add Item</button>
+<!DOCTYPE html>
+<html lang="en">
 
-  <div id="itemContainer" class="row mt-4">
-    <!-- Dynamically added items will appear here -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>add item</title>
+  <style>
+    /* General Styles for the Container */
+    .container {
+      padding: 30px 15px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Heading Styles */
+    h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    /* Button Styling */
+    #addItemBtn {
+      display: block;
+      margin: 0 auto 20px auto;
+      font-size: 1rem;
+      padding: 10px 20px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    #addItemBtn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Item Container Grid Layout */
+    #itemContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    /* Styling for Dynamically Added Items */
+    #itemContainer .card {
+      width: 280px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      background-color: white;;
+    }
+
+
+    #itemContainer .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    #itemContainer .card .card-body {
+      padding: 15px;
+      text-align: center;
+    }
+
+    #itemContainer .card .card-title {
+      font-size: 1.25rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    #itemContainer .card .card-text {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    #itemContainer .card .btn {
+      font-size: 0.875rem;
+      padding: 8px 15px;
+      margin: 0 5px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    #itemContainer .card .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    #itemContainer .card .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    #itemContainer .card .btn-danger {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    #itemContainer .card .btn-danger:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Manage Items</h2>
+    <button id="addItemBtn" class="btn btn-primary">Add Item</button>
+
+    <div id="itemContainer" class="row mt-4">
+      <!-- Dynamically added items will appear here -->
+    </div>
   </div>
-</div>
 
-<script>
-  document.getElementById('addItemBtn').addEventListener('click', function () {
-    const itemContainer = document.getElementById('itemContainer');
+  <script>
+    let itemCount = 0; // Counter for unique ID generation
 
-    // Create a new item card
-    const itemCard = document.createElement('div');
-    itemCard.className = 'col-sm-4 mb-3';
+    document.getElementById('addItemBtn').addEventListener('click', function () {
+      const itemContainer = document.getElementById('itemContainer');
+      itemCount++;
 
-    itemCard.innerHTML = `
+      // Create a new item card
+      const itemCard = document.createElement('div');
+      itemCard.className = 'col-sm-4 mb-3';
+      itemCard.innerHTML = `
       <div class="card">
         <div class="card-body">
-          <input type="text" class="form-control mb-2" placeholder="Enter Item Name" id="itemName">
+          <input type="text" class="form-control mb-2" placeholder="Enter Item Name" id="itemName_${itemCount}">
           
           <!-- Category Selection -->
-          <select class="form-control mb-2" id="itemCategory">
+          <select class="form-control mb-2" id="itemCategory_${itemCount}">
             <option value="">Select Category</option>
-            <option value="sub junior">Sub Junior</option>
+            <option value="subjunior">Sub Junior</option>
             <option value="junior">Junior</option>
             <option value="senior">Senior</option>
-            <option value="senior">General</option>
+            <option value="general(individual)">General (Individual)</option>
+            <option value="general(group)">General (Group)</option>
           </select>
 
-          <!-- Gold, Silver, Bronze Selection -->
-          <select class="form-control mb-2" id="itemType">
+          <!-- C, A, B Selection -->
+          <select class="form-control mb-2" id="itemType_${itemCount}">
             <option value="">Select Type</option>
-            <option value="gold">Gold</option>
-            <option value="silver">Silver</option>
-            <option value="bronze">Bronze</option>
+            <option value="C">C</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
           </select>
 
-          <button class="btn btn-success" onclick="saveItem(this)">Save</button>
+          <!-- Stage Selection -->
+          <select class="form-control mb-2" id="itemStage_${itemCount}">
+            <option value="">Select Stage Type</option>
+            <option value="stage">Stage</option>
+            <option value="offstage">Off Stage</option>
+          </select>
+
+          <button class="btn btn-success" onclick="saveItem(${itemCount})">Save</button>
         </div>
       </div>
     `;
 
-    itemContainer.appendChild(itemCard);
-  });
+      itemContainer.appendChild(itemCard);
+    });
 
-  // Function to save the item when the Save button is clicked
-  function saveItem(button) {
-    const itemName = button.previousElementSibling.previousElementSibling.previousElementSibling.value; // Get the item name
-    const itemCategory = button.previousElementSibling.previousElementSibling.value; // Get the selected category
-    const itemType = button.previousElementSibling.value; // Get the selected prize
+    // Function to save the item when the Save button is clicked
+    function saveItem(id) {
+      const itemName = document.getElementById(`itemName_${id}`).value;
+      const itemCategory = document.getElementById(`itemCategory_${id}`).value;
+      const itemType = document.getElementById(`itemType_${id}`).value;
+      const itemStage = document.getElementById(`itemStage_${id}`).value;
 
-    if (itemName && itemCategory && itemType) {
-      // Send data to server using Fetch
-      fetch('/admin/items/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: itemName, category: itemCategory, type: itemType }) // Include category and prize in the request body
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert('Item added successfully!');
-            location.reload(); // Reload the page to show the updated items
-          } else {
-            alert('Error adding item');
-          }
-        });
-    } else {
-      alert('Please enter an item name, select a category, and a prize');
+      if (itemName && itemCategory && itemType && itemStage) {
+        // Send data to server using Fetch
+        fetch('/admin/items/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: itemName, category: itemCategory, type: itemType, stage: itemStage })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Item added successfully!');
+              location.reload(); // Reload the page to show the updated items
+            } else {
+              alert('Error adding item');
+            }
+          });
+      } else {
+        alert('Please enter an item name, select a category, a type, and a stage.');
+      }
     }
-  }
-</script>
+  </script>
+
+</body>
+
+</html>

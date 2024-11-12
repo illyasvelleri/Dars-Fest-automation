@@ -1,19 +1,36 @@
 var express = require('express');
 var router = express.Router();
 var adminController = require('../controllers/adminControllers');
-const { route } = require('./jury');
+
+const adminAuthController = require('../controllers/adminAuthController');
+const authMiddleware = require('../controllers/authMiddleware');
+
+// Login Page
+router.get('/login', adminAuthController.login);
+
+// Authentication (Form Submission)
+router.post('/login', adminAuthController.authenticate);
+
+// Logout
+router.get('/logout', adminAuthController.logout);
+
 
 /* GET users listing. */
-router.get('/', adminController.adminDashboard);
+router.get('/', authMiddleware, adminController.adminDashboard);
+
 // router.get('/', function(req, res, next) {
 //   res.render('admin/dashboard');
 // });
 router.post('/contestants/upload', adminController.uploadContestant);
 
 
-router.post('admin/contestants',adminController.renderContestants);
+router.post('admin/contestants', adminController.renderContestants);
+
+router.post('/contestants/:id/delete', adminController.deleteContestant);
 
 router.get('/contestants', adminController.getContestants);
+
+router.delete('/items/:itemId/contestants/:contestantId', adminController.deleteContestantFromItem);
 
 // Route to display the admin add-items page
 router.get('/items/add', adminController.renderAddItemsPage);
@@ -23,6 +40,10 @@ router.post('/items/add', adminController.createItem);
 
 // Route to display all items
 router.get('/items', adminController.getItems);
+
+router.get('/filteredItems', adminController.getFilteredItems);
+
+
 
 router.get('/items/:id', adminController.viewItemPage);
 
@@ -43,6 +64,12 @@ router.get('/view-juries', adminController.viewAllJuries);
 
 router.post('/assign-jury-to-item', adminController.assignJuryToItem);
 
-router.post('/save-custom-points', adminController.saveCustomPoints);
+// Route to delete a jury
+router.post('/delete-jury/:id', adminController.deleteJury);
+
+router.delete('/items/:id', adminController.deleteItem);
+
+// router.post('/save-custom-points', adminController.saveCustomPoints);
+
 
 module.exports = router;

@@ -1,27 +1,302 @@
-<div class="container my-5">
-    <div class="d-flex justify-content-around">
-        <a href="admin/items/add" class="btn btn-primary btn-lg">Add Items</a>
-        <a href="admin/items" class="btn btn-secondary btn-lg">Manage Items</a>
-        <a href="admin/contestants" class="btn btn-info btn-lg">Manage Contestants</a>
-        <a href="admin/create-jury" class="btn btn-success btn-lg">Create Jury Panel</a> <!-- Button to create a jury panel -->
-        <a href="admin/view-juries" class="btn btn-secondary btn-lg">View Juries</a>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        :root {
+            --white: #fff;
+            --dark: #000000;
+
+            --light-white: #F1F1F1;
+
+            --ivory: #FFFFF0;
+
+            --dark-gray: #333333;
+
+            /* Vibrant Gradient Colors */
+            --vibrant-gradient-top-left: #9564E0;
+            --vibrant-gradient-top-right: #E1729C;
+            --vibrant-gradient-bottom-left: #5781F5;
+            --vibrant-gradient-bottom-right: #8A65FF;
+
+
+            /* Box Shadow */
+            --card-shadow: 4px 6px 15px rgba(0, 0, 0, 0.2);
+
+            --glass-blur: 10px;
+
+            --vibrant-gradient: linear-gradient(to bottom right,
+                    var(--vibrant-gradient-top-left),
+                    var(--vibrant-gradient-top-right) 33%,
+                    var(--vibrant-gradient-bottom-left) 66%,
+                    var(--vibrant-gradient-bottom-right));
+        }
+
+        body {
+            height: 100vh;
+            background: var(--ivory);
+        }
+
+        .navbar {
+            background: var(--ivory);
+            height: 70px;
+        }
+
+        .navbar .nav-item {
+            background: var(--vibrant-gradient-bottom-left);
+            margin-right: 10px;
+            margin-bottom: 5px;
+            border-radius: 20px;
+            padding: 2px 15px;
+
+        }
+
+        .navbar .logout {
+            background: var(--dark);
+        }
+
+        .navbar .nav-item:hover {
+            background: var(--vibrant-gradient-top-right);
+        }
+
+        .navbar .nav-item a {
+            color: var(--white);
+        }
+
+        /* General styling for the section */
+        /* General styling for the section */
+        .dashboard-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            justify-content: space-between;
+        }
+
+        .dashboard-section>div {
+            flex: 1;
+            min-width: 280px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            color: #555;
+            margin-top: 15px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        /* Card styling for each list item */
+        .card {
+            background-color: var(--ivory);
+            border: none;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard-section {
+                flex-direction: column;
+            }
+
+            .dashboard-section>div {
+                min-width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            h4 {
+                font-size: 1rem;
+            }
+
+            .card p {
+                font-size: 0.9rem;
+            }
+
+            .dashboard-section {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
+        <div class="container-fluid">
+            <!-- Brand/logo -->
+            <a class="navbar-brand" href="#">ALATHURPADI DASR FEST</a>
+
+            <!-- Offcanvas toggler button (only visible on mobile) -->
+            <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar items for larger screens (hidden on mobile) -->
+            <div class="collapse navbar-collapse d-none d-lg-block">
+                <ul class="navbar-nav m-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="admin/items/add">ADD ITEMS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin/items">MANAGE ITEMS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin/contestants">MANAGE CONTESTANTS</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="admin/create-jury">CREATE JURY PANEL</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin/view-juries">VIEW JURIES</a></li>
+                </ul>
+                <ul class="navbar-nav m-auto mb-2 mb-lg-0">
+                    <li class="nav-item logout"><a class="nav-link" href="admin/logout">Log Out</a></li>
+                </ul>
+            </div>
+
+            <!-- Offcanvas menu (only visible on mobile) -->
+            <div class="offcanvas offcanvas-end d-lg-none" tabindex="-1" id="offcanvasNavbar"
+                aria-labelledby="offcanvasNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item"><a class="nav-link" href="admin/items/add">ADD ITEMS</a></li>
+                        <li class="nav-item"><a class="nav-link" href="admin/items">MANAGE ITEMS</a></li>
+                        <li class="nav-item"><a class="nav-link" href="admin/contestants">MANAGE CONTESTANTS</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="admin/create-jury">CREATE JURY PANEL</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="admin/view-juries">VIEW JURIES</a></li>
+                    </ul>
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item logout"><a class="nav-link" href="admin/logout">Log Out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+
+        <div class="container">
+            <section class="dashboard-section">
+                <div class="performers-section">
+                    <h3>Top Performers</h3>
+                    {{#if topPerformers}}
+                    <ul class="performers-list">
+                        <h4>Subjunior</h4>
+                        {{#each topPerformers.subjunior}}
+                        <li class="card">
+                            <p>{{this.name}} - Group {{this.group}}, Points: {{this.totalPoints}}</p>
+                        </li>
+                        {{/each}}
+                        <h4>Junior</h4>
+                        {{#each topPerformers.junior}}
+                        <li class="card">
+                            <p>{{this.name}} - Group {{this.group}}, Points: {{this.totalPoints}}</p>
+                        </li>
+                        {{/each}}
+                        <h4>Senior</h4>
+                        {{#each topPerformers.senior}}
+                        <li class="card">
+                            <p>{{this.name}} - Group {{this.group}}, Points: {{this.totalPoints}}</p>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{else}}
+                    <p>No top performers found.</p>
+                    {{/if}}
+                </div>
+
+                <div class="group-points-section">
+                    <h3>Group Points</h3>
+                    {{#if groupPoints}}
+                    <ul class="group-points-list">
+                        <h4>First</h4>
+                        {{#each groupPoints.First}}
+                        <li class="card">
+                            <p>{{this.groupname}} - Points: {{this.totalPoints}}</p>
+                        </li>
+                        {{/each}}
+                        <h4>Second</h4>
+                        {{#each groupPoints.Second}}
+                        <li class="card">
+                            <p>{{this.groupname}} - Points: {{this.totalPoints}}</p>
+                        </li>
+                        {{/each}}
+                        <h4>Third</h4>
+                        {{#each groupPoints.Third}}
+                        <li class="card">
+                            <p>{{this.groupname}} - Points: {{this.totalPoints}}</p>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{else}}
+                    <p>No group points found.</p>
+                    {{/if}}
+                </div>
+
+                <div class="top-performers-group">
+                    <h3>Top Performers By Group</h3>
+                    {{#if topPerformersByGroup}}
+                    <ul class="group-performers-list">
+                        {{#each topPerformersByGroup}}
+                        <li class="card">
+                            <strong>{{this.groupname}}</strong>:
+                            <ul>
+                                {{#each this.topPerformers}}
+                                <li class="card">
+                                    <p>{{this.name}} - Points: {{this.totalPoints}}</p>
+                                </li>
+                                {{/each}}
+                            </ul>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{else}}
+                    <p>No top performers by group found.</p>
+                    {{/if}}
+                </div>
+            </section>
+
+        </div>
     </div>
-</div>
 
-<style>
-    .container {
-        text-align: center;
-    }
+</body>
 
-    a.btn {
-        width: 200px;
-        margin: 0 10px;
-        padding: 15px 0;
-        text-transform: uppercase;
-    }
-
-    a.btn:hover {
-        opacity: 0.9;
-        transition: opacity 0.2s ease-in-out;
-    }
-</style>
+</html>

@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var exphbs = require('express-handlebars');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 const Handlebars = require('handlebars');
 
 
@@ -24,6 +25,11 @@ var userRouter = require('./routes/user');
 var adminRouter = require('./routes/admin');
 var juryRouter = require('./routes/jury');
 
+// Mocked admin credentials
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD_HASH = bcrypt.hashSync('password123', 10); // Hashing password
+
+
 var app = express();
 
 // view engine setup
@@ -33,6 +39,7 @@ app.engine('hbs', exphbs.engine({
   layoutsDir: path.join(__dirname, 'views', 'layouts'),
   partialsDir: path.join(__dirname, 'views', 'partials')
 }));
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
@@ -41,9 +48,13 @@ Handlebars.registerHelper('eq', function (a, b) {
   return a === b;
 });
 
+// Register a keys helper
+Handlebars.registerHelper('keys', function (obj) {
+  return Object.keys(obj);
+});
 
 app.use(session({
-  secret: 'yourSecretKey',
+  secret: 'AdSa@#000',
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false }  // Set to `true` if you're using HTTPS
@@ -61,12 +72,12 @@ app.use('/admin', adminRouter);
 app.use('/jury', juryRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
