@@ -1,9 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var adminController = require('../controllers/adminControllers');
-
+const multer = require('multer');
 const adminAuthController = require('../controllers/adminAuthController');
 const authMiddleware = require('../controllers/authMiddleware');
+
+
+const upload = multer({ dest: 'uploads/' });
 
 // Login Page
 router.get('/login', adminAuthController.login);
@@ -21,7 +24,7 @@ router.get('/', authMiddleware, adminController.adminDashboard);
 // router.get('/', function(req, res, next) {
 //   res.render('admin/dashboard');
 // });
-router.post('/contestants/upload', adminController.uploadContestant);
+router.post('/contestants/upload', upload.single('file'), adminController.uploadContestant);
 
 
 router.post('admin/contestants', adminController.renderContestants);
@@ -43,6 +46,20 @@ router.get('/items', adminController.getItems);
 
 router.get('/filteredItems', adminController.getFilteredItems);
 
+
+router.post('/items/update-state/:id', async (req, res) => {
+    const itemId = req.params.id;
+    const { isChecked } = req.body;
+
+    try {
+        // Update the state of the checkbox in the database
+        const item = await Item.findByIdAndUpdate(itemId, { isChecked }, { new: true });
+        // Send a success response
+        res.json({ success: true, item });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
 
 
 router.get('/items/:id', adminController.viewItemPage);
@@ -70,6 +87,8 @@ router.post('/delete-jury/:id', adminController.deleteJury);
 router.delete('/items/:id', adminController.deleteItem);
 
 // router.post('/save-custom-points', adminController.saveCustomPoints);
+
+router.get('/view-items-participants', adminController.viewItemsParticipants);
 
 
 module.exports = router;

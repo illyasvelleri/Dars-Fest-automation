@@ -101,11 +101,6 @@ const ResultsSchema = new mongoose.Schema(
                     name: { type: String, required: true },
                     group: { type: String, required: true },
                     totalPoints: { type: Number, required: true },
-                    rank: {
-                        type: Number,
-                        enum: [1, 2, 3],  // Rank can only be 1 (first), 2 (second), or 3 (third)
-                        required: true,
-                    },
                 },
             ],
             junior: [
@@ -115,11 +110,6 @@ const ResultsSchema = new mongoose.Schema(
                     name: { type: String, required: true },
                     group: { type: String, required: true },
                     totalPoints: { type: Number, required: true },
-                    rank: {
-                        type: Number,
-                        enum: [1, 2, 3],  // Rank can only be 1 (first), 2 (second), or 3 (third)
-                        required: true,
-                    },
                 },
             ],
             senior: [
@@ -129,11 +119,6 @@ const ResultsSchema = new mongoose.Schema(
                     name: { type: String, required: true },
                     group: { type: String, required: true },
                     totalPoints: { type: Number, required: true },
-                    rank: {
-                        type: Number,
-                        enum: [1, 2, 3],  // Rank can only be 1 (first), 2 (second), or 3 (third)
-                        required: true,
-                    },
                 },
             ],
         },

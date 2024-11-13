@@ -25,33 +25,38 @@
 <div class="container">
   <h1>Contestant Registration</h1>
 
-  <form action="/admin/contestants/upload" method="POST" class="p-4 bg-white rounded">
+  <form action="/admin/contestants/upload" method="POST" enctype="multipart/form-data" class="p-4 bg-white rounded">
     <div class="row">
       <div class="col-md-3">
         <div class="form-group">
           <label for="contestantNumber">Contestant Number:</label>
-          <input type="number" name="contestantNumber" class="form-control" required>
+          <input type="number" name="contestantNumber" class="form-control">
         </div>
       </div>
       <div class="col-md-6">
         <div class="form-group">
           <label for="name">Contestant Name:</label>
-          <input type="text" name="name" class="form-control" required>
+          <input type="text" name="name" class="form-control">
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
           <label for="groupName">Group Name:</label>
-          <select name="groupName" class="form-control" required>
+          <select name="groupName" class="form-control">
             <option value="Ma'abariyah">Ma'abariyah</option>
             <option value="Fakhriyah">Fakhriyah</option>
             <option value="Nizamiyah">Nizamiyah</option>
           </select>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-block ms-3 mt-3" style="width:150px;">Add Contestant</button>
+      <div class="col-md-12 mt-3">
+        <label for="file">Or Upload Excel File:</label>
+        <input type="file" name="file" class="form-control" accept=".xlsx">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block ms-3 mt-3" style="width:150px;">Submit</button>
     </div>
   </form>
+
 
   <h2>Registered Contestants</h2>
   <div class="table-responsive">

@@ -5,7 +5,7 @@ const session = require('express-session');
 
 // Mocked admin credentials
 const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD_HASH = bcrypt.hashSync('admin123', 10); // Hashing password for security
+const ADMIN_PASSWORD_HASH = bcrypt.hashSync('FestAdmin786', 10); // Hashing password for security
 
 // Admin Login Handler
 exports.login = (req, res) => {
@@ -38,7 +38,7 @@ exports.authenticate = (req, res) => {
     // Redirect to admin dashboard
     // return res.render('admin/dashboard');
     // Call the adminDashboard function after authentication
-    return adminController.adminDashboard(req, res);
+    return res.redirect('/admin');
   });
 };
 

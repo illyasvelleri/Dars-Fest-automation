@@ -253,7 +253,8 @@
 
                   <div class="card-body">
                     <label class="switch" style="float: right;">
-                      <input type="checkbox" id="toggle-{{this._id}}" onchange="toggleItem('{{this._id}}')">
+                      <input type="checkbox" id="toggle-{{this._id}}" onchange="toggleItem('{{this._id}}')" {{#if
+                        this.isChecked}}checked{{/if}}>
                       <span class="slider"></span>
                     </label>
 
@@ -381,7 +382,7 @@
             participantsList.appendChild(li);
           });
         } else {
-          participantsList.innerHTML = '<li class="list-group-item">No participants yet.</li>';
+          participantsList.innerHTML ='<li class="list-group-item">No participants yet.</li>';
         }
       })
       .catch(error => {
@@ -394,6 +395,9 @@
 
   // Array to store IDs of selected items
   let selectedItems = [];
+
+
+
 
   // Toggles the selection of an item by ID
   function toggleItem(itemId) {
@@ -410,9 +414,59 @@
       selectedItems = selectedItems.filter(id => id !== itemId);
     }
 
-    // Trigger calculations for selected items
+    // Trigger calculations for selected items (if needed for the UI)
     calculateForSelectedItems();
+
+    // Send the updated state to the backend to be saved
+    fetch(`/admin/items/update-state/${itemId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ isChecked }),
+    })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          console.log('State updated on server');
+        } else {
+          console.error('Failed to update state on server');
+        }
+      })
+      .catch(error => console.error('Error updating state:', error));
   }
+
+  // WebSocket client setup for real-time synchronization (Socket.IO)
+  const socket = io();
+
+  // Listen for 'checkbox-state-changed' events to update the checkbox state
+  socket.on('checkbox-state-changed', ({ itemId, isChecked }) => {
+    const toggleSwitch = document.getElementById(`toggle-${itemId}`);
+    if (toggleSwitch) {
+      toggleSwitch.checked = isChecked;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Fetch the current state of all items
+    fetch('/admin/items')
+      .then(response => response.json())
+      .then(items => {
+        items.forEach(item => {
+          const toggleSwitch = document.getElementById(`toggle-${item._id}`);
+          if (toggleSwitch) {
+            toggleSwitch.checked = item.isChecked;
+          }
+        });
+      })
+      .catch(error => console.error('Error fetching item states:', error));
+  });
+
+
+
+
+
+
 
   // Calculates points and top performers for selected items
   function calculateForSelectedItems() {

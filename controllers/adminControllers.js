@@ -6,18 +6,11 @@ const Results = require('../models/Results');
 const PublicResults = require('../models/PublicResult');
 const Points = require('../models/Points');
 const mongoose = require('mongoose');
+const xlsx = require('xlsx');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs'); 
 
-
-// exports.adminDashboard = async (req, res) => {
-//     try {
-//         const juries = await Jury.find(); 
-        
-//         res.render('admin/dashboard', { juries });
-//     } catch (error) {
-//         console.error('Error fetching juries:', error);
-//         res.status(500).send('Error fetching juries');
-//     }
-// }
 
 exports.adminDashboard = async (req, res) => {
     try {
@@ -66,29 +59,40 @@ exports.renderContestants = (req, res) => {
 
 
 
-
-// Upload contestant details
-
 exports.uploadContestant = async (req, res) => {
     try {
-        const { contestantNumber, name, groupName } = req.body;
+        // Check if an Excel file was uploaded
+        if (req.file) {
+            const filePath = path.join(__dirname, '../', req.file.path);
+            const workbook = xlsx.readFile(filePath);
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const contestants = xlsx.utils.sheet_to_json(worksheet, { header: ["contestantNumber", "name", "groupName"] });
 
-        // Creating new contestant with the provided details and the generated contestant number
-        const newContestant = new Contestant({
-            contestantNumber,
-            name,
-            groupName,
-        });
+            // Loop through parsed data and save each contestant
+            for (const data of contestants) {
+                const { contestantNumber, name, groupName } = data;
+                const newContestant = new Contestant({ contestantNumber, name, groupName });
+                await newContestant.save();
+            }
 
-        await newContestant.save();
-        res.redirect('/admin/contestants');
-        console.log('Uploaded Details Successfully');
+            console.log('Contestants uploaded from Excel file successfully');
+            res.redirect('/admin/contestants');
+        } else {
+            // Manual form entry
+            const { contestantNumber, name, groupName } = req.body;
+            const newContestant = new Contestant({ contestantNumber, name, groupName });
+            await newContestant.save();
+
+            console.log('Uploaded details successfully');
+            res.redirect('/admin/contestants');
+        }
     } catch (error) {
-        // Log the actual error message for debugging purposes
         console.error('Error uploading contestant details:', error.message);
         res.status(500).send(`Error uploading contestant details: ${error.message}`);
     }
 };
+
 
 // Fetch all contestants for admin view
 
@@ -121,19 +125,6 @@ exports.deleteContestant = async (req, res) => {
     }
 }
 
-
-// Save the new item to the database
-// exports.createItem = async (req, res) => {
-//     try {
-//         const { name, category, type, stage} = req.body;
-//         const newItem = new Item({ name, category, type, stage });
-//         await newItem.save();
-//         res.json({ success: true });
-//     } catch (error) {
-//         console.log('Error Adding Item:', error);
-//         res.json({ success: false });
-//     }
-// };
 
 
 // Save the new item to the database
@@ -331,53 +322,53 @@ exports.viewItemPage = async (req, res) => {
 };
 
 
-// Search contestants by name, groupName, tokenNumber, or contestantNumber
 exports.searchContestants = async (req, res) => {
     const query = req.query.q;
+    console.log('Received search query:', query);  // Log the query
 
     try {
-        console.log('Search Query:', query);  // Log query for debugging
-
-        // Check if the query exists
         if (!query) {
             return res.status(400).json({ error: 'No query provided' });
         }
 
-        // Check if the query is numeric (for tokenNumber and contestantNumber)
-        const isNumericQuery = !isNaN(query);
+        // Check if the query is numeric and treat it as a string search
+        const isNumericQuery = !isNaN(query) && query.trim() !== '';
 
-        // Create search criteria
-        let searchCriteria;
+        let searchCriteria = {};
+
         if (isNumericQuery) {
-            // Search for tokenNumber or contestantNumber if the query is numeric
-            searchCriteria = {
-                $or: [
-                    { tokenNumber: parseInt(query, 10) },  // Ensure tokenNumber is treated as a number
-                    { contestantNumber: parseInt(query, 10) } // Ensure contestantNumber is treated as a number
-                ]
-            };
+            // If the query is numeric, search for the contestantNumber (as a string)
+            searchCriteria.contestantNumber = query.toString(); // Ensure it searches as a string
         } else {
-            // Otherwise, search for name or groupName
+            // Otherwise, search for the name and groupName
             searchCriteria = {
                 $or: [
-                    { name: { $regex: query, $options: 'i' } }, // Case-insensitive match for name
-                    { groupName: { $regex: query, $options: 'i' } } // Case-insensitive match for groupName
+                    { name: { $regex: query, $options: 'i' } },  // Case-insensitive match for name
+                    { groupName: { $regex: query, $options: 'i' } },  // Case-insensitive match for groupName
+                    { contestantNumber: { $regex: query, $options: 'i' } } // Case-insensitive match for contestantNumber
                 ]
             };
         }
 
-        console.log('Search Criteria:', searchCriteria); // Log the search criteria
+        console.log('Search Criteria:', searchCriteria);  // Log the search criteria
 
         // Perform the search
         const contestants = await Contestant.find(searchCriteria);
-        console.log('Contestants found:', contestants);  // Log the results
 
+        if (contestants.length === 0) {
+            return res.status(404).json({ message: 'No contestants found' });
+        }
+
+        console.log('Contestants found:', contestants);  // Log the results
         res.json(contestants);
     } catch (error) {
-        console.error('Error searching contestants:', error);  // Log the actual error
+        console.error('Error searching contestants:', error);
         res.status(500).json({ error: 'Error searching contestants' });
     }
 };
+
+
+
 
 
 exports.addContestantToItem = async (req, res) => {
@@ -413,10 +404,11 @@ exports.addContestantToItem = async (req, res) => {
     }
 };
 
-exports.deleteContestantFromItem = async (req, res) => {
+exports.deleteContestantFromItem = async (req, res) => { 
     const { itemId, contestantId } = req.params;
 
     try {
+        // Fetch the item from the database
         const item = await Item.findById(itemId);
         if (!item) {
             return res.status(404).json({ success: false, message: 'Item not found' });
@@ -428,16 +420,33 @@ exports.deleteContestantFromItem = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Contestant not found in this item' });
         }
 
-        // Remove the contestant from participants array
+        // Remove the contestant from participants array of the item
         item.participants.splice(index, 1);
         await item.save();
 
-        res.json({ success: true, message: 'Contestant removed successfully' });
+        // Now, we need to delete the contestant from other collections
+        // Assuming contestantId is a reference to the contestant document, 
+        // we will use `findOneAndDelete` or `update` in each of these collections.
+
+        // Remove contestant from Results
+        await Results.deleteMany({ contestantId });
+
+        // Remove contestant from PublicResults
+        await PublicResults.deleteMany({ contestantId });
+
+        // Remove contestant from Points
+        await Points.deleteMany({ contestantId });
+
+        // Remove contestant from GroupedScores
+        await GroupedScores.deleteMany({ contestantId });
+
+        res.json({ success: true, message: 'Contestant removed successfully from item and other collections' });
     } catch (error) {
         console.error('Error deleting contestant from item:', error);
         res.status(500).json({ success: false, message: 'Error deleting contestant from item' });
     }
 };
+
 
 exports.renderJuryCreation = (req, res) => {
     res.render('admin/create-jury');
@@ -530,26 +539,21 @@ exports.deleteItem = async (req, res) => {
     }
 };
 
-// // Route to handle saving custom points
-// exports.saveCustomPoints = async (req, res) => {
-//     try {
-//         const customPointsData = req.body.customPointsData;
 
-//         for (const entry of customPointsData) {
-//             const itemId = mongoose.Types.ObjectId(entry.itemId); // Cast to ObjectId
-//             const points = entry.points;
 
-//             // Save to the results collection
-//             await Result.findOneAndUpdate(
-//                 { itemId: itemId },
-//                 { points: points },
-//                 { upsert: true, new: true }
-//             );
-//         }
+exports.viewItemsParticipants = async (req, res) => {
+    try {
+        // Fetch all items and their participants
+        const items = await Item.find().populate('participants').lean(); // Ensure 'participants' is properly defined in your schema
 
-//         res.status(200).json({ message: 'Custom points saved successfully' });
-//     } catch (error) {
-//         console.error('Error saving custom points:', error);
-//         res.status(500).json({ error: 'Error saving custom points' });
-//     }
-// };
+        if (!items || items.length === 0) {
+            return res.render('viewItemsParticipants', { items: [] });
+        }
+
+        // Render the data on a new page
+        res.render('viewItemsParticipants', { items });
+    } catch (error) {
+        console.error('Error fetching items and participants:', error.message);
+        res.status(500).send('Error fetching items and participants.');
+    }
+};

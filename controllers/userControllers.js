@@ -155,14 +155,28 @@ const accumulateContestantPoints = async (pointsDocs, contestantTotals) => {
 };
 
 // Function to add general(individual) points to total points for contestants
+
 const addGeneralIndividualPoints = (contestantTotals, generalPointsDocs) => {
     generalPointsDocs.forEach(generalDoc => {
         if (generalDoc && Array.isArray(generalDoc.contestants)) {
-            generalDoc.contestants.forEach(generalContestant => {
+            generalDoc.contestants.forEach((generalContestant, index) => {
                 const contestantId = generalContestant.contestantId.toString();
+
+                // Check if the contestant exists in contestantTotals
                 if (contestantTotals[contestantId]) {
-                    // Check if this contestant has points in "general(individual)"
-                    contestantTotals[contestantId].totalPoints += generalContestant.points;
+                    let pointsToAdd = 0;
+
+                    // Assign points based on the rank (index)
+                    if (index === 0) {
+                        pointsToAdd = 5; // First place: 5 points
+                    } else if (index === 1) {
+                        pointsToAdd = 3; // Second place: 3 points
+                    } else if (index === 2) {
+                        pointsToAdd = 1; // Third place: 1 point
+                    }
+
+                    // Add the points to the contestant's total
+                    contestantTotals[contestantId].totalPoints += pointsToAdd;
                     console.log(`Added "general(individual)" points for ${contestantId}:`, contestantTotals[contestantId].totalPoints);
                 }
             });
@@ -171,6 +185,8 @@ const addGeneralIndividualPoints = (contestantTotals, generalPointsDocs) => {
         }
     });
 };
+
+
 
 // Function to find top contestants in each category based on total points in that category
 const findTopContestantsInEachCategory = (contestantTotals) => {
@@ -210,58 +226,6 @@ const findTopContestantsInEachCategory = (contestantTotals) => {
 };
 
 
-// Function to find top contestants in each category based on total points in that category
-// const findTopContestantsInEachCategory = (contestantTotals) => {
-//     const topContestants = {
-//         subjunior: [],
-//         junior: [],
-//         senior: []
-//     };
-
-//     for (const contestantId in contestantTotals) {
-//         const contestantData = contestantTotals[contestantId];
-
-//         // Log each contestant for debugging
-//         console.log(`Evaluating contestant ${contestantId}:`, contestantData);
-
-//         // Check if the contestant has a valid category
-//         const category = contestantData.category;
-
-//         if (isTopPerformer) {
-//             topContestants[category] = {
-//                 contestantId,
-//                 totalPoints: contestantData.totalPoints,
-//                 group: contestantData.contestant.group,
-//                 name: contestantData.contestant.name,
-//                 contestantNumber: contestantData.contestant.contestantNumber
-//             };
-//             console.log(`Updated top performer for category ${category}:`, topContestants[category]);
-//         }
-//     }
-
-//     // Prepare final structure for top performers
-//     const finalTopPerformers = {
-//         subjunior: { topPerformer: null, topContestants: [] },
-//         junior: { topPerformer: null, topContestants: [] },
-//         senior: { topPerformer: null, topContestants: [] }
-//     };
-
-//     // Iterate through each category to find the top performer and the next four
-//     for (const category in topContestants) {
-//         // Sort contestants by totalPoints in descending order
-//         const sortedContestants = topContestants[category].sort((a, b) => b.totalPoints - a.totalPoints);
-
-//         // Save the top performer (first in sorted list)
-//         if (sortedContestants.length > 0) {
-//             finalTopPerformers[category].topPerformer = sortedContestants[0];
-
-//             // Save the remaining top 4 performers if they exist
-//             finalTopPerformers[category].topContestants = sortedContestants.slice(1, 5); // Get next 4 performers
-//         }
-//     }
-
-//     return finalTopPerformers;
-// };
 
 
 
@@ -439,93 +403,3 @@ exports.calculateMultipleItems = async (req, res) => {
 };
 
 
-
-// // Main function that combines the three helper functions
-// exports.calculateMultipleItems = async (req, res) => {
-//     console.log('Received body:', req.body);
-
-//     try {
-//         const { itemIds } = req.body;
-//         if (!itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
-//             return res.status(400).json({ error: 'Invalid item IDs provided' });
-//         }
-
-//         let contestantTotals = {};
-//         let groupPoints = {
-//             First: [],
-//             Second: [],
-//             Third: [],
-//         };
-
-//         for (const itemId of itemIds) {
-//             console.log(`Processing item ID: ${itemId}`);
-
-//             // Fetch points document for the current item
-//             const pointsDoc = await Points.findOne({ itemId });
-
-//             if (!pointsDoc) {
-//                 console.warn(`No points found for item ID ${itemId}.`);
-//                 continue;
-//             }
-
-//             // Accumulate contestant points
-//             await accumulateContestantPoints([pointsDoc], contestantTotals);
-
-//             // Calculate group points for the current document
-//             const itemGroupPoints = calculateGroupTotalPoints(pointsDoc);
-
-//             // Accumulate group points and ranking information
-//             for (const [groupName, { totalPoints, ranks }] of Object.entries(itemGroupPoints)) {
-//                 groupPoints[groupName] = groupPoints[groupName] || { totalPoints: 0, ranks: { firstRank: 0, secondRank: 0, thirdRank: 0 } };
-//                 groupPoints[groupName].totalPoints += totalPoints;
-
-//                 // Accumulate ranks
-//                 groupPoints[groupName].ranks.firstRank += ranks.firstRank || 0;
-//                 groupPoints[groupName].ranks.secondRank += ranks.secondRank || 0;
-//                 groupPoints[groupName].ranks.thirdRank += ranks.thirdRank || 0;
-//             }
-//         }
-
-//         // Rank the group points
-//         const rankedGroupPoints = rankGroupPoints(groupPoints);
-
-//         // Fetch only "general(individual)" documents that match itemIds in the request
-//         const generalPointsDocs = await Points.find({
-//             itemId: { $in: itemIds },
-//             category: 'general(individual)'
-//         });
-
-//         // Add "general(individual)" points to contestant totals for the specified items
-//         addGeneralIndividualPoints(contestantTotals, generalPointsDocs);
-
-//         // Fetch top performers in each category based on the accumulated totals
-//         const topPerformers = findTopContestantsInEachCategory(contestantTotals);
-
-//         console.log("Final Group Points:", groupPoints);
-//         console.log("Final Top Performers:", topPerformers);
-
-//         // Check if results already exist in the database to avoid duplicates
-//         const existingResult = await Results.findOne({ /* conditions to find existing result */ });
-
-//         if (existingResult) {
-//             // Update existing result
-//             existingResult.topPerformers = topPerformers;
-//             existingResult.groupPoints = rankedGroupPoints;
-//             await existingResult.save();
-//         } else {
-//             // Save the results to the database
-//             const resultEntry = new Results({
-//                 topPerformers,
-//                 groupPoints: rankedGroupPoints,
-//             });
-//             await resultEntry.save();
-//         }
-
-//         // Send response with the results
-//         res.json({ groupPoints, topPerformers });
-
-//     } catch (error) {
-//         console.error('Error in calculateMultipleItems:', error);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// };
