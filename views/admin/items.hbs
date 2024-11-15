@@ -1,195 +1,3 @@
-<style>
-  :root {
-    --white: #fff;
-    --dark: #000000;
-
-    --light-white: #F1F1F1;
-
-    --ivory: #FFFFF0;
-
-    --dark-gray: #333333;
-
-    /* Vibrant Gradient Colors */
-    --vibrant-gradient-top-left: #9564E0;
-    --vibrant-gradient-top-right: #E1729C;
-    --vibrant-gradient-bottom-left: #5781F5;
-    --vibrant-gradient-bottom-right: #8A65FF;
-
-
-    /* Box Shadow */
-    --card-shadow: 4px 6px 15px rgba(0, 0, 0, 0.2);
-
-    --glass-blur: 10px;
-
-    --vibrant-gradient: linear-gradient(to bottom right,
-        var(--vibrant-gradient-top-left),
-        var(--vibrant-gradient-top-right) 33%,
-        var(--vibrant-gradient-bottom-left) 66%,
-        var(--vibrant-gradient-bottom-right));
-  }
-
-  * {
-    font-family: 'General Sans', sans-serif;
-  }
-
-  .container-fluid {
-    min-height: 100vh;
-    background: #202126;
-  }
-
-  /* Styling the select dropdown */
-  select {
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-    color: #333;
-    background-color: #f9f9f9;
-    appearance: none;
-    background-size: 12px;
-  }
-
-  /* Styling options */
-  select option {
-    padding: 8px;
-    /* Adds spacing within each option */
-    background-color: #fff;
-    /* Default background color */
-    color: #333;
-    /* Default text color */
-  }
-
-  /* Hover effect on options - works in some browsers */
-  select option:hover {
-    background-color: #f0f0f0;
-  }
-
-  /* Focused or selected option styles */
-  select option:checked,
-  select option:focus {
-    background-color: var(--vibrant-gradient-bottom-left);
-    /* Primary color */
-    color: #fff;
-    /* Contrast text color */
-  }
-
-  .filter-btn {
-    padding: 5px 20px;
-    border-radius: 10px;
-    background: var(--vibrant-gradient-bottom-left);
-    border: none;
-    color: var(--white);
-    margin-left: 15px;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 767px) {
-    select {
-      width: 100%;
-      max-width: 100%;
-    }
-  }
-
-  .title {
-    color: var(--white);
-  }
-
-  .filter-form option {
-    padding: 10px;
-  }
-
-  /* Mobile View */
-  @media (max-width: 767px) {
-    .filter-form {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .filter-form label,
-    .filter-form select,
-    .filter-form button {
-      width: 100%;
-      margin-right: 0;
-    }
-
-    .filter-form select {
-      margin-bottom: 10px;
-    }
-
-    .filter-form button {
-      width: auto;
-      align-self: center;
-    }
-  }
-
-  .card {
-    background: #202126;
-    color: var(--white);
-    border-radius: 10px;
-    padding: 10px;
-  }
-
-  /* Toggle switch style */
-  .switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 25px;
-  }
-
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #f5f5f5;
-    transition: 0.4s;
-    border-radius: 25px;
-  }
-
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 19px;
-    width: 19px;
-    left: 4px;
-    bottom: 3px;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 50%;
-  }
-
-  input:checked+.slider {
-    background-color: #059700;
-  }
-
-  input:checked+.slider:before {
-    transform: translateX(25px);
-  }
-
-  .manage-btn {
-    background: var(--ivory);
-    font-size: 14px;
-  }
-
-  .share-btn {
-    font-size: 16px;
-    background: var(--ivory);
-  }
-
-  .delete-btn {
-    font-size: 16px;
-    background: var(--ivory);
-  }
-</style>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -197,6 +5,197 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>items</title>
+  <style>
+    :root {
+      --white: #fff;
+      --dark: #000000;
+
+      --light-white: #F1F1F1;
+
+      --ivory: #FFFFF0;
+
+      --dark-gray: #333333;
+
+      /* Vibrant Gradient Colors */
+      --vibrant-gradient-top-left: #9564E0;
+      --vibrant-gradient-top-right: #E1729C;
+      --vibrant-gradient-bottom-left: #5781F5;
+      --vibrant-gradient-bottom-right: #8A65FF;
+
+
+      /* Box Shadow */
+      --card-shadow: 4px 6px 15px rgba(0, 0, 0, 0.2);
+
+      --glass-blur: 10px;
+
+      --vibrant-gradient: linear-gradient(to bottom right,
+          var(--vibrant-gradient-top-left),
+          var(--vibrant-gradient-top-right) 33%,
+          var(--vibrant-gradient-bottom-left) 66%,
+          var(--vibrant-gradient-bottom-right));
+    }
+
+    * {
+      font-family: 'General Sans', sans-serif;
+    }
+
+    body {
+      background: #202126;
+    }
+
+    /* Styling the select dropdown */
+    select {
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      color: #333;
+      background-color: #f9f9f9;
+      appearance: none;
+      background-size: 12px;
+    }
+
+    /* Styling options */
+    select option {
+      padding: 8px;
+      /* Adds spacing within each option */
+      background-color: #fff;
+      /* Default background color */
+      color: #333;
+      /* Default text color */
+    }
+
+    /* Hover effect on options - works in some browsers */
+    select option:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Focused or selected option styles */
+    select option:checked,
+    select option:focus {
+      background-color: var(--vibrant-gradient-bottom-left);
+      /* Primary color */
+      color: #fff;
+      /* Contrast text color */
+    }
+
+    .filter-btn {
+      padding: 5px 20px;
+      border-radius: 10px;
+      background: var(--vibrant-gradient-bottom-left);
+      border: none;
+      color: var(--white);
+      margin-left: 15px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+      select {
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+
+    .title {
+      color: var(--white);
+    }
+
+    .filter-form option {
+      padding: 10px;
+    }
+
+    /* Mobile View */
+    @media (max-width: 767px) {
+      .filter-form {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .filter-form label,
+      .filter-form select,
+      .filter-form button {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      .filter-form select {
+        margin-bottom: 10px;
+      }
+
+      .filter-form button {
+        width: auto;
+        align-self: center;
+      }
+    }
+
+    .card {
+      background: #202126;
+      color: var(--white);
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    /* Toggle switch style */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 25px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #f5f5f5;
+      transition: 0.4s;
+      border-radius: 25px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 19px;
+      width: 19px;
+      left: 4px;
+      bottom: 3px;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: #059700;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(25px);
+    }
+
+    .manage-btn {
+      background: var(--ivory);
+      font-size: 14px;
+    }
+
+    .share-btn {
+      font-size: 16px;
+      background: var(--ivory);
+    }
+
+    .delete-btn {
+      font-size: 16px;
+      background: var(--ivory);
+    }
+  </style>
 </head>
 
 <body>
@@ -320,11 +319,7 @@
       </div>
     </div>
   </div>
-</body>
-
-</html>
-
-<script>
+  <script>
   // Initialize global variables
   let selectedItemId = null;
   let selectedItems = [];
@@ -406,7 +401,7 @@
 
 
 
-   // Real-time synchronization with WebSocket
+  // Real-time synchronization with WebSocket
   socket.on('checkbox-state-changed', ({ itemId, isChecked }) => {
     const toggleSwitch = document.getElementById(`toggle-${itemId}`);
     if (toggleSwitch) {
@@ -414,7 +409,7 @@
     }
   });
 
-    // Load item states on DOM content load
+  // Load item states on DOM content load
   document.addEventListener('DOMContentLoaded', async function () {
     try {
       const response = await fetch('/admin/items');
@@ -512,3 +507,6 @@
   }
 
 </script>
+</body>
+
+</html>

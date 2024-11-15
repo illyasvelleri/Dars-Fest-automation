@@ -491,84 +491,75 @@
 
 
     </script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const buttons = document.querySelectorAll(".group-btn");
-            const tables = document.querySelectorAll(".topPerformersByGroup");
+        const socket = io();
 
-            // Show the selected table on button click
-            buttons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const groupIndex = this.getAttribute("data-group");
+        // Update Group Points
+        socket.on('results-updated', (data) => {
+            const groupPointsContainer = document.querySelectorAll('.groupPoints-card');
+            const groupKeys = ['First', 'Second', 'Third'];
+            groupKeys.forEach((group, index) => {
+                const card = groupPointsContainer[index];
+                const groupData = data.groupPoints[group];
 
-                    // Hide all tables, then show the selected one
-                    tables.forEach(table => (table.style.display = "none"));
-                    document.querySelector(`.topPerformersByGroup[data-group="${groupIndex}"]`).style.display = "block";
+                if (groupData && card) {
+                    const tableBody = card.querySelector('tbody');
+                    tableBody.innerHTML = `
+                    <tr>
+                        <td>
+                            <p>${groupData.groupname}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h1>${groupData.totalPoints}</h1>
+                        </td>
+                    </tr>`;
+                }
+            });
+
+            // Update Top Performers
+            const topPerformersContainer = document.querySelectorAll('.topPerformers-card');
+            const categories = ['subjunior', 'junior', 'senior'];
+            categories.forEach((category, index) => {
+                const card = topPerformersContainer[index];
+                const performers = data.topPerformers[category];
+
+                if (performers && card) {
+                    card.innerHTML = performers
+                        .map(
+                            (performer) =>
+                                `<p>Top performer of ${category.charAt(0).toUpperCase() + category.slice(1)}, <strong>${performer.name}</strong>, earned
+                            <h1>${performer.totalPoints}</h1> points for ${performer.group}.</p>`
+                        )
+                        .join('');
+                }
+            });
+
+            // Update Performers By Group
+            const topPerformersByGroup = document.querySelectorAll('.topPerformersByGroup');
+            const groupPerformers = data.topPerformersByGroup;
+            if (groupPerformers) {
+                topPerformersByGroup.forEach((groupContainer, index) => {
+                    const groupData = groupPerformers[index];
+                    if (groupData) {
+                        const tableBody = groupContainer.querySelector('tbody');
+                        tableBody.innerHTML = groupData.topPerformers
+                            .map(
+                                (performer) =>
+                                    `<tr>
+                                    <td>${performer.name}</td>
+                                    <td>${performer.totalPoints}</td>
+                                </tr>`
+                            )
+                            .join('');
+                    }
                 });
-            });
-
-            // Socket.IO setup
-            const socket = io(); // Connect to the server
-
-            // Listen for new results
-            socket.on("results-saved", (data) => {
-                console.log("New results saved:", data);
-
-                // Update the UI dynamically
-                updateResults(data);
-            });
-
-            // Listen for results updates
-            socket.on("results-updated", (data) => {
-                console.log("Results updated:", data);
-
-                // Update the UI dynamically
-                updateResults(data);
-            });
-
-            // Function to update results on the page
-            function updateResults(data) {
-                if (data.groupPoints) {
-                    // Update group points
-                    Object.keys(data.groupPoints).forEach((group, index) => {
-                        const table = document.querySelector(`.topPerformersByGroup[data-group="${index}"] tbody`);
-                        if (table) {
-                            table.innerHTML = data.groupPoints[group]
-                                .map(
-                                    performer => `
-                                <tr>
-                                    <td>${performer.name}</td>
-                                    <td>${performer.totalPoints}</td>
-                                </tr>
-                            `
-                                )
-                                .join("");
-                        }
-                    });
-                }
-
-                if (data.topPerformersByGroup) {
-                    // Update top performers by group
-                    Object.keys(data.topPerformersByGroup).forEach(group => {
-                        const table = document.querySelector(`.topPerformersByGroup[data-group="${group}"] tbody`);
-                        if (table) {
-                            table.innerHTML = data.topPerformersByGroup[group]
-                                .map(
-                                    performer => `
-                                <tr>
-                                    <td>${performer.name}</td>
-                                    <td>${performer.totalPoints}</td>
-                                </tr>
-                            `
-                                )
-                                .join("");
-                        }
-                    });
-                }
             }
         });
-
     </script>
+
 </body>
 
 </html>

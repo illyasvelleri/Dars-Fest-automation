@@ -29,15 +29,27 @@
     }
 
     .navbar {
-        background: var(--ivory);
+        background: #f5f5f5;
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
         height: 70px;
+        box-shadow: 0 6px 20px rgb(241, 239, 239);
+    }
+
+    .navbar-brand {
+        color: var(--ivory);
+    }
+
+    .navbar-brand:hover {
+        color: var(--white);
     }
 
     .navbar .nav-item {
-        background: var(--vibrant-gradient-bottom-left);
+        background: linear-gradient(135deg, #000000 0%, #202126 100%);
+        font-size: 13px;
         margin-right: 10px;
         margin-bottom: 5px;
         border-radius: 20px;
+        border: none;
         padding: 2px 15px;
 
     }
@@ -55,32 +67,32 @@
     }
 </style>
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
+<nav class="navbar navbar-expand-xl navbar-light bg-light shadow">
     <div class="container-fluid">
         <!-- Brand/logo -->
         <a class="navbar-brand" href="#">ALATHURPADI DARS FEST</a>
 
         <!-- Offcanvas toggler button (only visible on mobile) -->
-        <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas"
+        <button class="navbar-toggler d-xl-none" type="button" data-bs-toggle="offcanvas"
             data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Navbar items for larger screens (hidden on mobile) -->
-        <div class="collapse navbar-collapse d-none d-lg-block">
+        <div class="collapse navbar-collapse d-none d-xl-block">
             <ul class="navbar-nav m-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="/admin">HOME</a></li>
                 <li class="nav-item"><a class="nav-link" href="/admin/items/add">ADD ITEMS</a></li>
-                <li class="nav-item"><a class="nav-link" href="/admin/items">MANAGE ITEMS</a></li>
+                <li class="nav-item"><a class="nav-link" href="/admin/items">GET ITEMS</a></li>
                 <li class="nav-item"><a class="nav-link" href="/admin/contestants">MANAGE CONTESTANTS</a>
                 </li>
                 <li class="nav-item"><a class="nav-link" href="/admin/create-jury">CREATE JURY PANEL</a></li>
                 <li class="nav-item"><a class="nav-link" href="/admin/view-juries">VIEW JURIES</a></li>
             </ul>
-            <ul class="navbar-nav m-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav m-auto mb-2 mb-xl-0">
                 <li class="nav-item logout"><a class="nav-link" href="/admin/logout">Log Out</a></li>
             </ul>
-            <ul class="navbar-nav m-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav m-auto mb-2 mb-xl-0">
                 <li class="nav-item logout"><!-- In your dashboard view, add the following button -->
                     <a href="view-items-participants" class="btn">
                         View All Contestants
@@ -90,7 +102,7 @@
         </div>
 
         <!-- Offcanvas menu (only visible on mobile) -->
-        <div class="offcanvas offcanvas-end d-lg-none" tabindex="-1" id="offcanvasNavbar"
+        <div class="offcanvas offcanvas-end d-xl-none" tabindex="-1" id="offcanvasNavbar"
             aria-labelledby="offcanvasNavbarLabel">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
@@ -100,7 +112,7 @@
                 <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                     <li class="nav-item"><a class="nav-link" href="/admin">HOME</a></li>
                     <li class="nav-item"><a class="nav-link" href="/admin/items/add">ADD ITEMS</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/admin/items">MANAGE ITEMS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admin/items">GET ITEMS</a></li>
                     <li class="nav-item"><a class="nav-link" href="/admin/contestants">MANAGE CONTESTANTS</a>
                     </li>
                     <li class="nav-item"><a class="nav-link" href="/admin/create-jury">CREATE JURY PANEL</a>
