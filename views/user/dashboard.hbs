@@ -336,7 +336,9 @@
                 <div class="col-md-4 card groupPoints-card mb-4">
                     <div class="icon-container">
                         <form action="/user/group-results" method="POST">
-                            <input type="hidden" value="Ma'abariyah" id="searchInput" name="groupName" required />
+                            {{#each groupPoints.First}}
+                            <input type="hidden" value="{{groupname}}" id="searchInput" name="groupName" required />
+                            {{/each}}
                             <button type="submit" id="getGroupResultButton"><i
                                     class="fa-solid fa-arrow-up-right-from-square"></i>
                             </button>
@@ -361,7 +363,9 @@
                 <div class="col-md-4 card groupPoints-card mb-4">
                     <div class="icon-container">
                         <form action="/user/group-results" method="POST">
-                            <input type="hidden" value="Fakhriyah" id="searchInput" name="groupName" required />
+                            {{#each groupPoints.Second}}
+                            <input type="hidden" value="{{groupname}}" id="searchInput" name="groupName" required />
+                            {{/each}}
                             <button type="submit" id="getGroupResultButton"><i
                                     class="fa-solid fa-arrow-up-right-from-square"></i>
                             </button>
@@ -386,7 +390,9 @@
                 <div class="col-md-4 card groupPoints-card mb-4">
                     <div class="icon-container">
                         <form action="/user/group-results" method="POST">
-                            <input type="hidden" value="Nizamiyah" id="searchInput" name="groupName" required />
+                            {{#each groupPoints.Third}}
+                            <input type="hidden" value="{{groupname}}" id="searchInput" name="groupName" required />
+                            {{/each}}
                             <button type="submit" id="getGroupResultButton"><i
                                     class="fa-solid fa-arrow-up-right-from-square"></i>
                             </button>
