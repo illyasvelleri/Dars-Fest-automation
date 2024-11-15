@@ -13,11 +13,10 @@
 </head>
 
 <body>
-    {{!-- {{#if isAdmin}}
+    {{#if isAuthenticated}}
     {{> admin-header}}
-    {{else}}
-    {{> user-header}}
-    {{/if}} --}}
+    {{/if}}
+
     {{{body}}}
 
     {{!-- {{#if isAdmin}}

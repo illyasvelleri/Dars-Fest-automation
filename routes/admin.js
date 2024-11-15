@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var adminController = require('../controllers/adminControllers');
 const multer = require('multer');
+const Contestant = require('../models/Contestant');
 const adminAuthController = require('../controllers/adminAuthController');
 const authMiddleware = require('../controllers/authMiddleware');
 
@@ -31,18 +32,21 @@ router.post('admin/contestants', adminController.renderContestants);
 
 router.post('/contestants/:id/delete', adminController.deleteContestant);
 
-router.get('/contestants', adminController.getContestants);
+router.get('/contestants', authMiddleware, adminController.getContestants);
 
 router.delete('/items/:itemId/contestants/:contestantId', adminController.deleteContestantFromItem);
 
 // Route to display the admin add-items page
-router.get('/items/add', adminController.renderAddItemsPage);
+router.get('/items/add', authMiddleware, adminController.renderAddItemsPage);
 
 // Route to add a new item
 router.post('/items/add', adminController.createItem);
 
 // Route to display all items
-router.get('/items', adminController.getItems);
+router.get('/items', authMiddleware, adminController.getItems);
+
+// Route to update item state (checked or unchecked)
+router.post('/items/update-state', adminController.updateItemState);
 
 router.get('/filteredItems', adminController.getFilteredItems);
 
@@ -70,14 +74,14 @@ router.get('/contestants/search', adminController.searchContestants);
 // Add contestant to item route
 router.post('/items/add-contestant', adminController.addContestantToItem);
 
-router.get('/create-jury', adminController.renderJuryCreation);
+router.get('/create-jury', authMiddleware, adminController.renderJuryCreation);
 
 // Create a new jury
 router.post('/create', adminController.createJury);
 
 router.post('/view-juries', adminController.viewAllJuries);
 
-router.get('/view-juries', adminController.viewAllJuries);
+router.get('/view-juries', authMiddleware, adminController.viewAllJuries);
 
 router.post('/assign-jury-to-item', adminController.assignJuryToItem);
 
@@ -89,6 +93,7 @@ router.delete('/items/:id', adminController.deleteItem);
 // router.post('/save-custom-points', adminController.saveCustomPoints);
 
 router.get('/view-items-participants', adminController.viewItemsParticipants);
+
 
 
 module.exports = router;

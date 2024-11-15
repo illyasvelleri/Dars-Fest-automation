@@ -9,7 +9,8 @@ const mongoose = require('mongoose');
 const xlsx = require('xlsx');
 const path = require('path');
 const multer = require('multer');
-const fs = require('fs'); 
+const fs = require('fs');
+const checkAuth = require('../controllers/authMiddleware');
 
 
 exports.adminDashboard = async (req, res) => {
@@ -23,11 +24,11 @@ exports.adminDashboard = async (req, res) => {
         // Check if results were found
         if (!results) {
             console.log("No results found.");
-            return res.render('admin/dashboard', { 
+            return res.render('admin/dashboard', {
                 juries,
-                topPerformers: {}, 
-                groupPoints: {}, 
-                topPerformersByGroup: [] 
+                topPerformers: {},
+                groupPoints: {},
+                topPerformersByGroup: []
             });
         }
 
@@ -35,11 +36,11 @@ exports.adminDashboard = async (req, res) => {
         const { topPerformers, groupPoints, topPerformersByGroup } = results;
 
         // Render the admin dashboard with juries and results data
-        res.render('admin/dashboard', { 
+        res.render('admin/dashboard', {
             juries,
             topPerformers: topPerformers || {},
             groupPoints: groupPoints || {},
-            topPerformersByGroup: topPerformersByGroup || [] 
+            topPerformersByGroup: topPerformersByGroup || []
         });
 
     } catch (error) {
@@ -51,7 +52,7 @@ exports.adminDashboard = async (req, res) => {
 
 
 exports.renderAddItemsPage = (req, res) => {
-    res.render('admin/add-items');
+    res.render('admin/add-items', { isAuthenticated: req.session.isAuthenticated });
 };
 exports.renderContestants = (req, res) => {
     res.render('admin/contestants');
@@ -102,7 +103,7 @@ exports.getContestants = async (req, res) => {
         // Convert each contestant document to a plain object
         const contestants = contestantsFromDb.map(contestant => contestant.toObject());
 
-        res.render('admin/contestants', { contestants: contestants });
+        res.render('admin/contestants', { isAuthenticated: req.session.isAuthenticated, contestants: contestants });
     } catch (error) {
         res.status(500).send("Error fetching contestants.");
     }
@@ -173,9 +174,20 @@ exports.getItems = async (req, res) => {
         const juries = juriesFromDb.map(jury => jury.toObject());
 
 
-        res.render('admin/items', { items, juries });
+        res.render('admin/items', { isAuthenticated: req.session.isAuthenticated, items, juries });
     } catch (error) {
         res.status(500).send('Error fetching items');
+    }
+};
+
+// Update item state
+exports.updateItemState = async (req, res) => {
+    const { itemId, isChecked } = req.body;
+    try {
+        await Item.findByIdAndUpdate(itemId, { isChecked });
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
     }
 };
 
@@ -404,7 +416,7 @@ exports.addContestantToItem = async (req, res) => {
     }
 };
 
-exports.deleteContestantFromItem = async (req, res) => { 
+exports.deleteContestantFromItem = async (req, res) => {
     const { itemId, contestantId } = req.params;
 
     try {
@@ -449,7 +461,7 @@ exports.deleteContestantFromItem = async (req, res) => {
 
 
 exports.renderJuryCreation = (req, res) => {
-    res.render('admin/create-jury');
+    res.render('admin/create-jury', { isAuthenticated: req.session.isAuthenticated });
 };
 
 
@@ -487,7 +499,7 @@ exports.viewAllJuries = async (req, res) => {
 
         // Convert each Jury document to a plain object
         const juriesPlain = juries.map(jury => jury.toObject());
-        res.render('admin/view-juries', { juries: juriesPlain });
+        res.render('admin/view-juries', {isAuthenticated: req.session.isAuthenticated, juries: juriesPlain });
     } catch (error) {
         console.error('Error fetching juries:', error);
         res.status(500).send('Error fetching juries');
@@ -544,7 +556,7 @@ exports.deleteItem = async (req, res) => {
 exports.viewItemsParticipants = async (req, res) => {
     try {
         // Fetch all items and their participants
-        const items = await Item.find().populate('participants').lean(); // Ensure 'participants' is properly defined in your schema
+        const items = await Item.find().populate('participants').lean().lean(); // Ensure 'participants' is properly defined in your schema
 
         if (!items || items.length === 0) {
             return res.render('viewItemsParticipants', { items: [] });

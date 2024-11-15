@@ -297,7 +297,7 @@ exports.calculateMultipleItems = async (req, res) => {
         if (!itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
             return res.status(400).json({ error: 'Invalid item IDs provided' });
         }
-
+        const io = req.app.get('io'); // Retrieve the `io` object from the app
         let contestantTotals = {};
         let groupPoints = {};
 
@@ -383,6 +383,14 @@ exports.calculateMultipleItems = async (req, res) => {
             existingResult.groupPoints = rankedGroupPoints;
             existingResult.topPerformersByGroup = topPerformersByGroup; //
             await existingResult.save();
+
+            // Emit an update event through Socket.IO
+            io.emit('results-updated', {
+                groupPoints: rankedGroupPoints,
+                topPerformers,
+                topPerformersByGroup,
+            });
+
         } else {
             // Save the results to the database
             const resultEntry = new Results({
@@ -391,6 +399,12 @@ exports.calculateMultipleItems = async (req, res) => {
                 groupPoints: rankedGroupPoints,
             });
             await resultEntry.save();
+            // Emit a new results event through Socket.IO
+            io.emit('results-saved', {
+                groupPoints: rankedGroupPoints,
+                topPerformers,
+                topPerformersByGroup,
+            });
         }
 
         // Send response with the results

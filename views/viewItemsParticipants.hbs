@@ -1,37 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Items and Participants</title>
-    <link rel="stylesheet" href="/css/styles.css"> <!-- Link your CSS file here -->
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .item-card h2,
+        .item-card h3 {
+            margin-bottom: 15px;
+        }
+
+        /* Table Styles */
+        .participants-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .participants-table th,
+        .participants-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .participants-table th {
+            background-color: #f8f9fa;
+        }
+
+        .participants-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Responsive Styling */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            .container {
+                padding: 0 10px;
+            }
+
+            .item-card h2 {
+                font-size: 18px;
+            }
+
+            .item-card h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Items and Participants</h1>
-    
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Item Name</th>
-                <th>Item Category</th>
-                <th>Contestant Number</th>
-                <th>Participant Name</th>
-                <th>Group Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% items.forEach(item => { %>
-                <% item.participants.forEach(participant => { %>
-                    <tr>
-                        <td><%= item.name %></td>
-                        <td><%= item.category %></td>
-                        <td><%= participant.contestantNumber %></td>
-                        <td><%= participant.name %></td>
-                        <td><%= participant.groupName %></td>
-                    </tr>
-                <% }) %>
-            <% }) %>
-        </tbody>
-    </table>
+    <div class="container">
+        <h1>Items and Participants</h1>
+
+        {{#if items}}
+        <div class="items-grid">
+            {{#each items}}
+            <div class="item-card">
+                <h2>Item: {{this.name}}</h2>
+                <h3>Participants:</h3>
+
+                {{#if this.participants.length}}
+                <table class="participants-table">
+                    <thead>
+                        <tr>
+                            <th>Contestant Number</th>
+                            <th>Participant Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each this.participants}}
+                        <tr>
+                            <td>{{this.contestantNumber}}</td>
+                            <td>{{this.name}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+                {{else}}
+                <p>No participants for this item.</p>
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <p>No items or participants available.</p>
+        {{/if}}
+    </div>
 </body>
+
 </html>

@@ -325,8 +325,10 @@
 </html>
 
 <script>
-  // JavaScript code for modal and jury assignment
+  // Initialize global variables
   let selectedItemId = null;
+  let selectedItems = [];
+  const socket = io();
 
   // Open the jury modal
   function openJuryModal(itemId) {
@@ -365,81 +367,46 @@
       });
   }
 
-  // Fetch and display item details including participants
-  function fetchItemDetails(itemId) {
-    fetch(`/admin/get-item-details/${itemId}`)
-      .then(response => response.json())
-      .then(item => {
-        // Clear previous participants
-        const participantsList = document.getElementById('participantsList');
-        participantsList.innerHTML = '';
-
-        if (item.participants.length) {
-          item.participants.forEach(participant => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML = `${participant.name}<span class="badge bg-secondary">${participant.contestantNumber}</span>`;
-            participantsList.appendChild(li);
-          });
-        } else {
-          participantsList.innerHTML ='<li class="list-group-item">No participants yet.</li>';
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching item details:', error);
-      });
-  }
 
 
-
-
-  // Array to store IDs of selected items
-  let selectedItems = [];
-
-
-
-
-  // Toggles the selection of an item by ID
+  // Toggle item selection and update its state
   function toggleItem(itemId) {
     const toggleSwitch = document.getElementById(`toggle-${itemId}`);
     const isChecked = toggleSwitch.checked;
 
-    // Log toggle action
-    console.log(`Item ID: ${itemId}, Selected: ${isChecked}`);
-
-    // Add or remove item based on its checked status
     if (isChecked) {
       if (!selectedItems.includes(itemId)) selectedItems.push(itemId);
     } else {
       selectedItems = selectedItems.filter(id => id !== itemId);
     }
 
-    // Trigger calculations for selected items (if needed for the UI)
     calculateForSelectedItems();
-
-    // Send the updated state to the backend to be saved
-    fetch(`/admin/items/update-state/${itemId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ isChecked }),
-    })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
-          console.log('State updated on server');
-        } else {
-          console.error('Failed to update state on server');
-        }
-      })
-      .catch(error => console.error('Error updating state:', error));
+    updateItemState(itemId, isChecked);
   }
 
-  // WebSocket client setup for real-time synchronization (Socket.IO)
-  const socket = io();
+  // Update item state on the server
+  async function updateItemState(itemId, isChecked) {
+    try {
+      const response = await fetch('/admin/items/update-state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, isChecked })
+      });
+      const result = await response.json();
 
-  // Listen for 'checkbox-state-changed' events to update the checkbox state
+      if (result.success) {
+        console.log(`State for item ${itemId} updated on server`);
+      } else {
+        console.error('Failed to update state on server');
+      }
+    } catch (error) {
+      console.error('Error updating state:', error);
+    }
+  }
+
+
+
+   // Real-time synchronization with WebSocket
   socket.on('checkbox-state-changed', ({ itemId, isChecked }) => {
     const toggleSwitch = document.getElementById(`toggle-${itemId}`);
     if (toggleSwitch) {
@@ -447,22 +414,21 @@
     }
   });
 
-  document.addEventListener('DOMContentLoaded', function () {
-    // Fetch the current state of all items
-    fetch('/admin/items')
-      .then(response => response.json())
-      .then(items => {
-        items.forEach(item => {
-          const toggleSwitch = document.getElementById(`toggle-${item._id}`);
-          if (toggleSwitch) {
-            toggleSwitch.checked = item.isChecked;
-          }
-        });
-      })
-      .catch(error => console.error('Error fetching item states:', error));
+    // Load item states on DOM content load
+  document.addEventListener('DOMContentLoaded', async function () {
+    try {
+      const response = await fetch('/admin/items');
+      const items = await response.json();
+      items.forEach(item => {
+        const toggleSwitch = document.getElementById(`toggle-${item._id}`);
+        if (toggleSwitch) {
+          toggleSwitch.checked = item.isChecked;
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching item states:', error);
+    }
   });
-
-
 
 
 
