@@ -386,35 +386,41 @@ exports.searchContestants = async (req, res) => {
 exports.addContestantToItem = async (req, res) => {
     const { itemId, contestantId } = req.body;
     try {
+        console.log(`Received request to add contestant ${contestantId} to item ${itemId}`);
 
-        // Check if both itemId and contestantId are valid ObjectId strings
+        // Validate ObjectId strings
         if (!mongoose.Types.ObjectId.isValid(itemId) || !mongoose.Types.ObjectId.isValid(contestantId)) {
+            console.warn('Invalid ObjectId received');
             return res.status(400).send('Invalid item or contestant ID');
         }
 
-
+        // Fetch item and contestant
         const item = await Item.findById(itemId);
         const contestant = await Contestant.findById(contestantId);
 
         if (!item || !contestant) {
+            console.warn(`Item or contestant not found: itemId=${itemId}, contestantId=${contestantId}`);
             return res.status(404).json({ success: false, message: 'Item or contestant not found' });
         }
 
         if (item.participants.includes(contestantId)) {
+            console.info(`Contestant ${contestantId} already added to item ${itemId}`);
             return res.status(400).json({ success: false, message: 'Contestant already added' });
         }
 
         // Add contestant and save the item
+        console.log(`Adding contestant ${contestantId} to item ${itemId}`);
         item.participants.push(contestantId);
         await item.save();
 
-        // Send a success response
+        console.log(`Successfully added contestant ${contestantId} to item ${itemId}`);
         return res.json({ success: true, message: 'Contestant added successfully' });
     } catch (error) {
-        console.error('Error adding contestant to item:', error);
+        console.error(`Error adding contestant to item: itemId=${itemId}, contestantId=${contestantId}`, error);
         return res.status(500).json({ success: false, message: 'Error adding contestant to item' });
     }
 };
+
 
 
 
