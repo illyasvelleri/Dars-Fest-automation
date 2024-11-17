@@ -109,6 +109,15 @@
             color: #888;
             /* Gray color for text */
         }
+
+        /* Scratch Area Styling */
+        #scratchArea {
+            cursor: crosshair;
+        }
+
+        #hiddenCode {
+            visibility: hidden;
+        }
     </style>
 </head>
 
@@ -139,13 +148,10 @@
                         <span class="badge bg-info ms-3">Score: {{this.score}}</span>
                         {{#if this.badge}}
                         <span class="badge bg-success ms-3">Badge: {{this.badge}}</span>
-                        {{else}}
-                        <span class="badge bg-warning ms-3"></span>
                         {{/if}}
-                        {{else}}
-                        <span class="badge bg-warning ms-3"></span>
                         {{/if}}
                     </div>
+
                     <!-- Delete button for each contestant -->
                     <button class="btn btn-danger btn-sm"
                         onclick="deleteContestant('{{this.id}}', '{{../itemId}}')">Delete</button>
@@ -158,6 +164,9 @@
             {{/if}}
         </ul>
     </div>
+
+
+
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -303,6 +312,7 @@
                 alert("An error occurred. Please try again.");
             }
         }
+
 
     </script>
 

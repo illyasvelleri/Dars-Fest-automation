@@ -74,6 +74,7 @@ router.get('/contestants/search', adminController.searchContestants);
 // Add contestant to item route
 router.post('/items/add-contestant', adminController.addContestantToItem);
 
+
 router.get('/create-jury', authMiddleware, adminController.renderJuryCreation);
 
 // Create a new jury

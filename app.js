@@ -8,9 +8,10 @@ var exphbs = require('express-handlebars');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const Handlebars = require('handlebars');
-
+require('dotenv').config(); // To use environment variables
 
 var db = require('./config/db');
+
 // Connecting to the database
 db.connect((err) => {
   if (err) {
@@ -25,10 +26,6 @@ db.connect((err) => {
 var userRouter = require('./routes/user');
 var adminRouter = require('./routes/admin');
 var juryRouter = require('./routes/jury');
-
-// Mocked admin credentials
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD_HASH = bcrypt.hashSync('password123', 10); // Hashing password
 
 
 var app = express();

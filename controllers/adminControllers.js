@@ -287,7 +287,7 @@ exports.assignJuryToItem = async (req, res) => {
     }
 };
 
-
+          
 // View item page with populated participants
 exports.viewItemPage = async (req, res) => {
     const itemId = req.params.id;
@@ -416,6 +416,9 @@ exports.addContestantToItem = async (req, res) => {
     }
 };
 
+
+
+
 exports.deleteContestantFromItem = async (req, res) => {
     const { itemId, contestantId } = req.params;
 
@@ -499,7 +502,7 @@ exports.viewAllJuries = async (req, res) => {
 
         // Convert each Jury document to a plain object
         const juriesPlain = juries.map(jury => jury.toObject());
-        res.render('admin/view-juries', {isAuthenticated: req.session.isAuthenticated, juries: juriesPlain });
+        res.render('admin/view-juries', { isAuthenticated: req.session.isAuthenticated, juries: juriesPlain });
     } catch (error) {
         console.error('Error fetching juries:', error);
         res.status(500).send('Error fetching juries');
