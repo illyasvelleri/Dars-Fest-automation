@@ -18,53 +18,76 @@ exports.getDashboard = async (req, res) => {
             return res.render('user/dashboard', { topPerformers: {}, groupPoints: {}, topPerformersByGroup: [] });
         }
 
-        // Extract and format topPerformers by category
-        const { topPerformers, groupPoints, topPerformersByGroup } = results;
 
+        // Extract the data from the results object
+        const { topPerformers = {}, groupPoints = {}, topPerformersByGroup = [] } = results;
+
+        // Safely format topPerformers by category
         const formattedTopPerformers = {
-            subjunior: topPerformers.subjunior.map(({ name, group, totalPoints }) => ({
-                name,
-                group,
-                totalPoints,
-            })),
-            junior: topPerformers.junior.map(({ name, group, totalPoints }) => ({
-                name,
-                group,
-                totalPoints,
-            })),
-            senior: topPerformers.senior.map(({ name, group, totalPoints }) => ({
-                name,
-                group,
-                totalPoints,
-            })),
+            subjunior: [],
+            junior: [],
+            senior: [],
         };
+
+        // Helper function to format data safely
+        function formatTopPerformers(category, data) {
+            if (data && data.length > 0) {
+                data.forEach(({ name = "N/A", group = "N/A", totalPoints = 0 }) => {
+                    category.push({ name, group, totalPoints });
+                });
+            } else {
+                category.push({ name: "N/A", group: "N/A", totalPoints: 0 }); // Default value if no data
+            }
+        }
+
+        // Format topPerformers for each category
+        formatTopPerformers(formattedTopPerformers.subjunior, topPerformers.subjunior);
+        formatTopPerformers(formattedTopPerformers.junior, topPerformers.junior);
+        formatTopPerformers(formattedTopPerformers.senior, topPerformers.senior);
 
         // Format the groupPoints by rank
         const formattedGroupPoints = {
-            First: groupPoints.First.map(({ groupname, totalPoints }) => ({
-                groupname,
-                totalPoints,
-            })),
-            Second: groupPoints.Second.map(({ groupname, totalPoints }) => ({
-                groupname,
-                totalPoints,
-            })),
-            Third: groupPoints.Third.map(({ groupname, totalPoints }) => ({
-                groupname,
-                totalPoints,
-            })),
+            First: [],
+            Second: [],
+            Third: [],
         };
 
+        // Helper function to format group points
+        function formatGroupPoints(rank, data) {
+            if (data && data.length > 0) {
+                data.forEach(({ groupname = "N/A", totalPoints = 0 }) => {
+                    rank.push({ groupname, totalPoints });
+                });
+            } else {
+                rank.push({ groupname: "N/A", totalPoints: 0 }); // Default value if no data
+            }
+        }
+
+        // Format group points for each rank
+        formatGroupPoints(formattedGroupPoints.First, groupPoints.First);
+        formatGroupPoints(formattedGroupPoints.Second, groupPoints.Second);
+        formatGroupPoints(formattedGroupPoints.Third, groupPoints.Third);
 
         // Format topPerformersByGroup
-        const formattedTopPerformersByGroup = topPerformersByGroup.map(({ groupname, topPerformers }) => ({
-            groupname,
-            topPerformers: topPerformers.map(({ contestantId, name, totalPoints }) => ({
-                contestantId,
-                name,
-                totalPoints,
-            })),
-        }));
+        const formattedTopPerformersByGroup = [];
+
+        topPerformersByGroup.forEach(({ groupname = "N/A", topPerformers = [] }) => {
+            const groupData = {
+                groupname,
+                topPerformers: [],
+            };
+
+            // Format top performers within the group
+            if (topPerformers && topPerformers.length > 0) {
+                topPerformers.forEach(({ contestantId = "N/A", name = "N/A", totalPoints = 0 }) => {
+                    groupData.topPerformers.push({ contestantId, name, totalPoints });
+                });
+            } else {
+                groupData.topPerformers.push({ contestantId: "N/A", name: "N/A", totalPoints: 0 }); // Default value if no data
+            }
+
+            formattedTopPerformersByGroup.push(groupData);
+        });
 
         // Render the dashboard with the data
         res.render('user/dashboard', {

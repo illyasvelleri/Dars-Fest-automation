@@ -476,96 +476,94 @@
             </div>
         </div>
     </div>
-    <script>
-        {
-            {
-                !--document.addEventListener("DOMContentLoaded", function () {
-                    const buttons = document.querySelectorAll(".group-btn");
-                    const tables = document.querySelectorAll(".topPerformersByGroup");
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    // Establish a connection with the server using Socket.IO
+    const socket = io();
 
-                    buttons.forEach(button => {
-                        button.addEventListener("click", function () {
-                            const groupIndex = this.getAttribute("data-group");
+    // Listen for 'dashboard-update' events sent by the server
+    socket.on('dashboard-update', (data) => {
+        console.log('Dashboard update received:', data);
 
-                            // Hide all tables, then show the selected one
-                            tables.forEach(table => table.style.display = "none");
-                            document.querySelector(`.topPerformersByGroup[data-group="${groupIndex}"]`).style.display = "block";
-                        });
-                    });
-                }); --}
+        // Update DOM elements dynamically with received data
+        // Example: Update top performers
+        if (data.topPerformers) {
+            updateTopPerformers(data.topPerformers);
         }
 
+        // Example: Update group points
+        if (data.groupPoints) {
+            updateGroupPoints(data.groupPoints);
+        }
 
-    </script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
+        // Example: Update top performers by group
+        if (data.topPerformersByGroup) {
+            updateTopPerformersByGroup(data.topPerformersByGroup);
+        }
+    });
 
-        // Update Group Points
-        socket.on('results-updated', (data) => {
-            const groupPointsContainer = document.querySelectorAll('.groupPoints-card');
-            const groupKeys = ['First', 'Second', 'Third'];
-            groupKeys.forEach((group, index) => {
-                const card = groupPointsContainer[index];
-                const groupData = data.groupPoints[group];
-
-                if (groupData && card) {
-                    const tableBody = card.querySelector('tbody');
-                    tableBody.innerHTML = `
-                    <tr>
-                        <td>
-                            <p>${groupData.groupname}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h1>${groupData.totalPoints}</h1>
-                        </td>
-                    </tr>`;
-                }
-            });
-
-            // Update Top Performers
-            const topPerformersContainer = document.querySelectorAll('.topPerformers-card');
-            const categories = ['subjunior', 'junior', 'senior'];
-            categories.forEach((category, index) => {
-                const card = topPerformersContainer[index];
-                const performers = data.topPerformers[category];
-
-                if (performers && card) {
-                    card.innerHTML = performers
-                        .map(
-                            (performer) =>
-                                `<p>Top performer of ${category.charAt(0).toUpperCase() + category.slice(1)}, <strong>${performer.name}</strong>, earned
-                            <h1>${performer.totalPoints}</h1> points for ${performer.group}.</p>`
-                        )
-                        .join('');
-                }
-            });
-
-            // Update Performers By Group
-            const topPerformersByGroup = document.querySelectorAll('.topPerformersByGroup');
-            const groupPerformers = data.topPerformersByGroup;
-            if (groupPerformers) {
-                topPerformersByGroup.forEach((groupContainer, index) => {
-                    const groupData = groupPerformers[index];
-                    if (groupData) {
-                        const tableBody = groupContainer.querySelector('tbody');
-                        tableBody.innerHTML = groupData.topPerformers
-                            .map(
-                                (performer) =>
-                                    `<tr>
-                                    <td>${performer.name}</td>
-                                    <td>${performer.totalPoints}</td>
-                                </tr>`
-                            )
-                            .join('');
-                    }
+    // Function to update the top performers section
+    function updateTopPerformers(topPerformers) {
+        const categories = ['subjunior', 'junior', 'senior'];
+        categories.forEach((category) => {
+            const container = document.getElementById(`${category}-performers`);
+            if (container) {
+                container.innerHTML = ''; // Clear existing content
+                topPerformers[category].forEach(({ name, group, totalPoints }) => {
+                    const performerDiv = document.createElement('div');
+                    performerDiv.classList.add('performer');
+                    performerDiv.innerHTML = `
+                        <strong>${name}</strong> (${group}) - ${totalPoints} points
+                    `;
+                    container.appendChild(performerDiv);
                 });
             }
         });
-    </script>
+    }
 
-</body>
+    // Function to update the group points section
+    function updateGroupPoints(groupPoints) {
+        const ranks = ['First', 'Second', 'Third'];
+        ranks.forEach((rank) => {
+            const container = document.getElementById(`${rank.toLowerCase()}-group-points`);
+            if (container) {
+                container.innerHTML = ''; // Clear existing content
+                groupPoints[rank].forEach(({ groupname, totalPoints }) => {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.classList.add('group');
+                    groupDiv.innerHTML = `
+                        <strong>${groupname}</strong> - ${totalPoints} points
+                    `;
+                    container.appendChild(groupDiv);
+                });
+            }
+        });
+    }
+
+    // Function to update top performers by group
+    function updateTopPerformersByGroup(topPerformersByGroup) {
+        const container = document.getElementById('top-performers-by-group');
+        if (container) {
+            container.innerHTML = ''; // Clear existing content
+            topPerformersByGroup.forEach(({ groupname, topPerformers }) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.classList.add('group-performers');
+                groupDiv.innerHTML = `
+                    <h4>${groupname}</h4>
+                    <ul>
+                        ${topPerformers
+                        .map(
+                            ({ contestantId, name, totalPoints }) =>
+                                `<li>${name} (${contestantId}) - ${totalPoints} points</li>`
+                        )
+                        .join('')}
+                    </ul>
+                `;
+                container.appendChild(groupDiv);
+            });
+        }
+    }
+</script>
 
 </html>

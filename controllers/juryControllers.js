@@ -137,14 +137,14 @@ const assignPointsAndBadges = async (groupedScore) => {
         const itemPoints = pointsMap[groupedScore.itemType] || { 1: 0, 2: 0, 3: 0 }; // Default to 0 if itemType is invalid
 
         // Find or create a Points document for this item
-        let pointsDoc = await Points.findOne({ itemId: groupedScore.itemId, category: groupedScore.itemCategory, itemStage:groupedScore.itemStage});
+        let pointsDoc = await Points.findOne({ itemId: groupedScore.itemId, category: groupedScore.itemCategory, itemStage: groupedScore.itemStage });
 
         if (!pointsDoc) {
             pointsDoc = new Points({
                 itemId: groupedScore.itemId,
                 category: groupedScore.itemCategory,
                 itemType: groupedScore.itemType,
-                itemStage:groupedScore.itemStage,
+                itemStage: groupedScore.itemStage,
                 contestants: [],
             });
         } else {
@@ -212,7 +212,6 @@ const assignPointsAndBadges = async (groupedScore) => {
 exports.saveScores = async (req, res) => {
     try {
         const { scores } = req.body;
-
         // Validate input data
         if (!scores || !Array.isArray(scores)) {
             return res.status(400).json({ success: false, message: 'Invalid data format' });
@@ -221,6 +220,9 @@ exports.saveScores = async (req, res) => {
         // Process each score entry
         for (const entry of scores) {
             const { contestantId, itemId, itemType, itemCategory, itemStage, groupName, score, badge } = entry;
+        
+            //in here success contestestant id
+
 
             // Ensure all required fields are present
             if (!contestantId || !itemId || !itemType || !itemCategory || !itemStage || !groupName || score === undefined || score === null) {
@@ -281,6 +283,9 @@ exports.saveScores = async (req, res) => {
         for (const itemId of itemIds) {
             // Fetch all contestants for this item who have a score greater than 0
             let groupedScore = await GroupedScores.findOne({ itemId }).populate('scores.contestantId');
+            console.log("Data passed to saveScores: ", groupedScore);
+
+
 
             // If groupedScore does not exist, skip badge assignment
             if (!groupedScore || !groupedScore.scores) {
@@ -318,8 +323,8 @@ exports.saveScores = async (req, res) => {
 
             // Save the updated grouped scores with badges
             await groupedScore.save();
-             // Call the function to assign points and badges
-             await assignPointsAndBadges(groupedScore);
+            // Call the function to assign points and badges
+            await assignPointsAndBadges(groupedScore);
         }
 
         res.status(200).json({ success: true, message: 'Scores and points updated successfully, badges assigned' });
